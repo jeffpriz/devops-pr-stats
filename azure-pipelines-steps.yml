@@ -1,0 +1,28 @@
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '8.12.0'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm ci
+  displayName: 'Install dependencies'
+
+- script: |
+    npm run build
+  displayName: 'Compile and package'
+
+- script: |
+    npm run package-extension
+  displayName: 'Compile and package'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: '**/*.vsix'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'

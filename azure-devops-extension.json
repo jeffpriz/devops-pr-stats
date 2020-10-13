@@ -1,0 +1,68 @@
+{
+    "manifestVersion": 1,
+    "id": "sprintActivityReport",
+    "publisher": "OneLuckiDev",
+    "version": "0.0.18",
+    "name": "Sprint Backlog Activity Report",
+    "description": "Report on backlog item movement within a sprint.  Gives you insight in to things like How many stories to we push out of this sprint? or How many stories did we add to this sprint?.",
+    "public": false,
+    "categories": [
+        "Azure Boards"
+    ],
+    "tags": [
+        "sprint",
+        "iteration",
+        "report",
+        "moved story",
+        "backlog report"
+    ],
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "icons": {
+        "default": "logo.png"
+    },
+    "content": {
+        "details": {
+            "path": "overview.md"
+        },
+        "license": {
+            "path": "LICENSE"
+        }
+    },
+    "files": [
+        {
+            "path": "static",
+            "addressable": true
+        },
+        {
+            "path": "dist",
+            "addressable": true
+        }
+    ],
+    "badges": [
+        {
+            "href": "https://oneluckidev.visualstudio.com/OneLuckiDev/_apis/build/status/azDevOps-sprint-report",
+            "uri": "https://oneluckidev.visualstudio.com/OneLuckiDev/_apis/build/status/azDevOps-sprint-report",
+            "description": "Build for this Task run in Azure DevOps"
+        }
+    ],
+    "links": {
+        "support": {
+            "uri": "https://github.com/jeffpriz/azDevOps-sprint-report/issues"
+        },
+        "repository": {
+            "uri": "https://github.com/jeffpriz/azDevOps-sprint-report"
+        }
+    },
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/jeffpriz/azDevOps-sprint-report"
+    },
+    "branding": {
+        "color": "rgb(27,160,225)",
+        "theme": "dark"
+    }
+}
