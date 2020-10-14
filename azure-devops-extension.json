@@ -1,20 +1,18 @@
 {
     "manifestVersion": 1,
-    "id": "sprintActivityReport",
+    "id": "prApprovalReport",
     "publisher": "OneLuckiDev",
-    "version": "0.0.18",
-    "name": "Sprint Backlog Activity Report",
-    "description": "Report on backlog item movement within a sprint.  Gives you insight in to things like How many stories to we push out of this sprint? or How many stories did we add to this sprint?.",
+    "version": "0.0.24",
+    "name": "Pull Request Approval Report",
+    "description": "This will give you insights in to who is approving the Pull Requests for your repository.  It will disply the overall number and the numbers over the last 30 days.",
     "public": false,
     "categories": [
-        "Azure Boards"
+        "Azure Repos"
     ],
     "tags": [
-        "sprint",
-        "iteration",
-        "report",
-        "moved story",
-        "backlog report"
+        "pull request",
+        "approval",
+        "report"
     ],
     "targets": [
         {
@@ -51,15 +49,15 @@
     ],
     "links": {
         "support": {
-            "uri": "https://github.com/jeffpriz/azDevOps-sprint-report/issues"
+            "uri": "https://github.com/jeffpriz/devops-pr-stats/issues"
         },
         "repository": {
-            "uri": "https://github.com/jeffpriz/azDevOps-sprint-report"
+            "uri": "https://github.com/jeffpriz/devops-pr-stats"
         }
     },
     "repository": {
         "type": "git",
-        "uri": "https://github.com/jeffpriz/azDevOps-sprint-report"
+        "uri": "https://github.com/jeffpriz/devops-pr-stats"
     },
     "branding": {
         "color": "rgb(27,160,225)",

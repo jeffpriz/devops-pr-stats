@@ -1,0 +1,18 @@
+{
+    "contributions": [
+        {
+            "id": "onelucki-pr-approval-report",
+            "type": "ms.vss-web.hub",
+            "description": "Custom hub in the Code hub group that displays information about the currently active Git repository.",
+            "targets": [
+                "ms.vss-code-web.code-hub-group"
+            ],
+            "properties": {
+                "name": "PR Approval Report",
+                "order": 100,
+                "icon": "asset://static/logo_navbar_light_theme2.png",
+                "uri": "dist/PRInfo/context.html"
+            }
+        }
+    ]
+}

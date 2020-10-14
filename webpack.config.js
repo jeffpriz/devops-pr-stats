@@ -6,7 +6,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const entries = {};
 
 // Loop through subfolders in the "Samples" folder and add an entry for each one
-const panelsDir = path.join(__dirname, "src/ReportPanel");
+const panelsDir = path.join(__dirname, "src/contributions");
 fs.readdirSync(panelsDir).filter(dir => {
     if (fs.statSync(path.join(panelsDir, dir)).isDirectory()) {
         entries[dir] = "./" + path.relative(process.cwd(), path.join(panelsDir, dir, dir));
@@ -54,6 +54,6 @@ module.exports = {
         ]
     },
     plugins: [
-        new CopyWebpackPlugin([ { from: "**/*.html", context: "src/ReportPanel" }])
+        new CopyWebpackPlugin([ { from: "**/*.html", context: "src/contributions" }])
     ]
 };
