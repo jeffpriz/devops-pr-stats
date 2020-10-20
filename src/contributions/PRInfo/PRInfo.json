@@ -14,5 +14,9 @@
                 "uri": "dist/PRInfo/context.html"
             }
         }
+    ],
+    "scopes": [
+        "vso.code",
+        "vso.code_status"
     ]
 }
