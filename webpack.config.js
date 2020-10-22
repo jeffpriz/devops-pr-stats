@@ -54,6 +54,7 @@ module.exports = {
         ]
     },
     plugins: [
-        new CopyWebpackPlugin([ { from: "**/*.html", context: "src/contributions" }])
+        new CopyWebpackPlugin([ { from: "**/*.html", context: "src/contributions" }]),
+        new CopyWebpackPlugin([ { from: "**/*.png", context: "src/contributions" }])
     ]
 };
