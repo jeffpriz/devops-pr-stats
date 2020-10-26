@@ -19,7 +19,7 @@ module.exports = {
         filename: "[name]/[name].js"
     },
     resolve: {
-        extensions: [".ts", ".tsx", ".js"],
+        extensions: [".ts", ".tsx", ".js"],        
         alias: {
             "azure-devops-extension-sdk": path.resolve("node_modules/azure-devops-extension-sdk")
         },
@@ -49,6 +49,8 @@ module.exports = {
             },
             {
                 test: /\.html$/,
+                exclude: [/\canvg?$/],
+                exclude: [/\xlsx?$/],
                 loader: "file-loader"
             }
         ]

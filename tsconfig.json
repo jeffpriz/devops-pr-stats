@@ -12,7 +12,7 @@
         "outDir": "dist/",
         "jsx": "react",
         "lib": [
-          "es5",
+        "es5",
           "es6",
           "dom",
           "es2015.promise"

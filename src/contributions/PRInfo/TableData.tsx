@@ -60,8 +60,15 @@ export const fixedColumns = [
         readonly: true,
         renderCell: renderTargetBranch,
         width: new ObservableValue(-30),
+    },
+    {
+        id: "reviewerCount",
+        name: "Reviewer Count",
+        onSize: onSize,
+        readonly: true,
+        renderCell: renderReviewerCount,
+        width: new ObservableValue(-30),
     }
-
 ];
 
 export function renderId(
@@ -152,6 +159,29 @@ export function renderTargetBranch(
     
 }
 
+
+export function renderReviewerCount(
+    rowIndex: number,
+    columnIndex: number,
+    tableColumn: ITableColumn<ITableItem>,
+    tableItem:ITableItem
+): JSX.Element {
+        const { reviewerCount } = tableItem;
+        return(
+            <TableCell
+                className="bolt-table-cell-content-with-inline-link no-v-padding"
+                key={"col-" + columnIndex}
+                columnIndex={columnIndex}
+                tableColumn={tableColumn}               
+            >                 
+                <div className="fontsizeM font-size-m bolt-table-inline-link-left-padding">
+                    {reviewerCount}
+                </div>            
+        </TableCell>
+        );
+    
+}
+
 export function renderDateColumn(
     rowIndex: number,
     columnIndex: number,
@@ -209,6 +239,7 @@ export interface ITableItem {
     createdBy: string;
     sourceBranch: string;
     targetBranch: string;
+    reviewerCount:number;
 }
 
 export const renderStatus = (className?: string) => {

@@ -1,14 +1,14 @@
 {
     "contributions": [
         {
-            "id": "onelucki-pr-approval-report",
+            "id": "onelucki-pr-completion-report",
             "type": "ms.vss-web.hub",
-            "description": "Custom hub in the Code hub group that displays information about the currently active Git repository.",
+            "description": "Hub to show stats and information about the Pull Request completions in this repository.",
             "targets": [
                 "ms.vss-code-web.code-hub-group"
             ],
             "properties": {
-                "name": "PR Approval Report",
+                "name": "PR Completetion Stats",
                 "order": 100,
                 "icon": "asset://static/logo_navbar_light_theme2.png",
                 "uri": "dist/PRInfo/context.html"
