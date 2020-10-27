@@ -18,6 +18,16 @@ export interface INameCount
     value:number
 }
 
+export interface IReviewWithVote
+{
+    name:string,
+    value:number,
+    voteApprove:number,
+    voteReject:number,
+    notVote:number,
+    voteWait:number
+}
+
 
 export function getMillisecondsToTime(duration:number):IPRDuration {
     //let duration:number = endTime.valueOf() - startTime.valueOf();

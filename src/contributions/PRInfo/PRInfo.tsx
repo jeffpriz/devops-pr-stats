@@ -8,7 +8,8 @@ import { GitRestClient, GitPullRequest, PullRequestStatus, GitPullRequestSearchC
 import { CommonServiceIds, getClient } from "azure-devops-extension-api";
 import { showRootComponent } from "../../Common";
 import { GitRepository, IdentityRefWithVote } from "azure-devops-extension-api/Git/Git";
-import { fixedColumns,  ITableItem, onSize, renderId, renderCreatedBy,renderDateColumn,renderSourceBranch,renderStatus,renderTargetBranch,WithIcon } from "./TableData";
+import {  fixedColumns,  ITableItem } from "./TableData";
+import { getPieChartInfo, getStackedBarChartInfo, stackedChartOptions,BarChartSize } from "./ChartingInfo";
 import { ArrayItemProvider } from "azure-devops-ui/Utilities/Provider";
 import { Card } from "azure-devops-ui/Card";
 import { Table } from "azure-devops-ui/Table";
@@ -18,8 +19,9 @@ import { Toast } from "azure-devops-ui/Toast";
 import { ZeroData, ZeroDataActionType } from "azure-devops-ui/ZeroData";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import * as statKeepers from "./statKeepers";
-import { PieChart } from 'react-chartkick'
-import 'chart.js'
+import { Doughnut, Bar } from 'react-chartjs-2';
+
+
 
 interface IRepositoryServiceHubContentState {
     repository: GitRepository | null;
@@ -43,12 +45,17 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
     private targetBranches:statKeepers.INameCount[];
     private branchDictionary:Map<string, statKeepers.INameCount>;
 
-    private approverList: statKeepers.INameCount[];
-    private approverDictionary:Map<string, statKeepers.INameCount>;
+    private approverList: statKeepers.IReviewWithVote[];
+    private approverDictionary:Map<string, statKeepers.IReviewWithVote>;
 
+
+    private approvalGroupList: statKeepers.IReviewWithVote[];
+    private approvalGroupDictionary: Map<string, statKeepers.IReviewWithVote>;
     public readonly noReviewerText:string ="No Reviewer";
 
+    public myBarChartDims:BarChartSize;
     public PRCount:number = 0;
+    
     
     constructor(props: {}) {
         super(props);
@@ -61,9 +68,12 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         this.branchDictionary = new Map<string,statKeepers.INameCount>();
 
         this.approverList = [];
-        this.approverDictionary = new Map<string, statKeepers.INameCount>();
-        this.approverDictionary.set(this.noReviewerText, {name:this.noReviewerText,value:0});
+        this.approverDictionary = new Map<string, statKeepers.IReviewWithVote>();
+        this.approverDictionary.set(this.noReviewerText, {name:this.noReviewerText,value:0, notVote:0, voteApprove:0, voteReject:0, voteWait:0});
 
+        this.approvalGroupList = []
+        this.approvalGroupDictionary = new Map<string,statKeepers.IReviewWithVote>();
+        this.myBarChartDims = {height:200, width:500};
     }
 
     public async componentDidMount() {
@@ -96,17 +106,27 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                         this.targetBranches.push(thisBranchItem);
                     });
                     this.approverDictionary.forEach((value)=>{
-                        this.approverList.push(value);
+                        //we will only put the "No Reviewer" item in if we had a PR with no reviewer
+                        if(value.name == this.noReviewerText)
+                        {
+                            if(value.value > 0)
+                            {
+                                this.approverList.push(value);
+                            }
+
+                        }
+                        else {
+                            this.approverList.push(value);
+                        }
+                        
                     })
+
+                    this.approvalGroupDictionary.forEach((value)=>{
+                        this.approvalGroupList.push(value);
+                    });
+
                     this.durationDisplayObject = statKeepers.getMillisecondsToTime(averageOpenTime);
                     this.setState({doneLoading:true});
-
-                    //let chart = create("chartdiv", PieChart);
-                    //chart.data = this.targetBranches;
-                    //let pieSeries = chart.series.push(new PieSeries());
-                    //chart.innerRadius = percent(40);
-                    //pieSeries.dataFields.value = "value";
-                    //pieSeries.dataFields.category = "name";
 
 
                 }
@@ -120,12 +140,6 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
             
         }
 
-        
-        
-        //this.itemProvider= new ObservableArray<ITableItem | ObservableValue<ITableItem | undefined>>(this.tableArrayData.value);
-//        this.setState({
-//            repository,  exception, prCount:count, prTableRows: prTableList, prTableArray:prTableArrayObj
-//        });
     }
 
     public AddRowItem(item:ITableItem)
@@ -242,7 +256,14 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         if(thisPR.reviewers.length > 0)
         {
             thisPR.reviewers.forEach(value =>{
-               this.AddPRIdentityToStat(value);
+                if(!value.isContainer)
+                {
+                    this.AddPRIdentityToStat(value);
+                }
+                else
+                {
+                    this.AddPRApprovalGroupToStat(value);
+                }
             });
             
         }
@@ -266,15 +287,63 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
             if(thisApprover)
             {
                 thisApprover.value = thisApprover.value + 1;
-                this.approverDictionary.set(thisID, thisApprover);          
-            
-            }
-            
+                this.AddVoteCount(thisApprover,thisValue.vote);
+                this.approverDictionary.set(thisID, thisApprover);            
+            }            
         }
         else {
             
-            this.approverDictionary.set(thisID, {name:thisName, value:1});
+            let newVoteStat:statKeepers.IReviewWithVote = {name:thisName, value:1, voteApprove:0, voteReject:0, voteWait:0,notVote:0};
+            this.AddVoteCount(newVoteStat, thisValue.vote);
+            this.approverDictionary.set(thisID, newVoteStat);
         }
+    }
+
+    private AddPRApprovalGroupToStat(thisValue:IdentityRefWithVote)
+    {
+
+        let thisID = thisValue.displayName;
+        let thisName = thisValue.displayName;
+        if(this.approvalGroupDictionary.has(thisID))
+        {
+            thisValue.vote
+
+            let thisApprover = this.approvalGroupDictionary.get(thisID);
+            if(thisApprover)
+            {
+                thisApprover.value = thisApprover.value + 1;
+                this.AddVoteCount(thisApprover,thisValue.vote);
+                this.approvalGroupDictionary.set(thisID, thisApprover);          
+            
+            }            
+        }
+        else {
+            let newVoteStat:statKeepers.IReviewWithVote = {name:thisName, value:1, voteApprove:0, voteReject:0, voteWait:0,notVote:0};
+            this.AddVoteCount(newVoteStat, thisValue.vote);
+            this.approvalGroupDictionary.set(thisID, newVoteStat);
+            
+        }
+    }
+
+    private AddVoteCount(statItem:statKeepers.IReviewWithVote, vote:number )
+    {
+        if(vote == 10 || vote ==5)
+        {
+            statItem.voteApprove++;
+        }
+        else if (vote == 0)
+        {
+            statItem.notVote++;
+        }
+        else if (vote == -5)
+        {
+            statItem.voteWait++;
+        }
+        else if(vote == -10)
+        {
+            statItem.voteReject++;
+        }
+
     }
 
     public async GetGitAPIClient(repositoryID:string)
@@ -313,36 +382,41 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
  //       return returnData;
  //   }
 
-    private randomColor(){
 
-          return '#' + this.randomChannel(150) + this.randomChannel(150) + this.randomChannel(150);
-      }
-    
-    private randomChannel(brightness:number){
-        var r = 255-brightness;
-        var n = 0|((Math.random() * r) + brightness);
-        var s = n.toString(16);
-        return (s.length==1) ? '0'+s : s;
-      }
+ private getChartWidth(listLength:number):number
+ {
+     let width:number = 115;
+
+     let addwidth = listLength * 85;
+
+     width = width + addwidth;
+
+     if(width < 300)
+     {
+         width=300;
+     }
+     return width;
+ }
+
+
+
+
     public render(): JSX.Element {
         let isToastVisible = this.state.isToastVisible;
         let foundCompletedPRs = this.state.foundCompletedPRs;
         let doneLoading = this.state.doneLoading;
-        
-
+        let targetBranchChartData = getPieChartInfo(this.targetBranches);
+        let reviewerPieChartData = getPieChartInfo(this.approverList);
+        let groupBarChartData = getStackedBarChartInfo(this.approvalGroupList,"");
+        let reviewerBarChartData = getStackedBarChartInfo(this.approverList, this.noReviewerText);
+        let barDims:BarChartSize = this.myBarChartDims;
+        let approverChartWidth = this.getChartWidth(this.approverList.length);
+        let individualBarDims:BarChartSize = {height:this.myBarChartDims.height, width:approverChartWidth}
+        let groupChartWidth = this.getChartWidth(this.approvalGroupList.length);
+        let groupBarDims:BarChartSize = {height:this.myBarChartDims.height, width:groupChartWidth}
         if(doneLoading)
         {
-            if(true)
-            {
 
-                return(
-                    <div>
-                    <PieChart width={1000} height={500} data={[["Blueberry", 44], ["Strawberry", 23], ["Raspberry",55]]}>
-                        
-                    </PieChart>
-                    </div>
-                )
-            }
 
             if(!foundCompletedPRs)
             {
@@ -365,7 +439,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                 );
             }
             else
-            {
+            {   
                 return(
 
                     <Page className="flex-grow prinfo-hub">                
@@ -388,7 +462,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                         <div className="body-m secondary-text">Minutes</div>
                                         <div className="body-m primary-text flex-center">{this.durationDisplayObject.minutes.toString()}</div>
                                     </div>                        
-                                    <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
+                                    <div className="flex-column" style={{ minWidth: "70px" }} key={4}>
                                         <div className="body-m secondary-text">Seconds</div>
                                         <div className="body-m primary-text flex-center">{this.durationDisplayObject.seconds.toString()}</div>
                                     </div>                        
@@ -398,31 +472,112 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                     </div>
                     
                     <div className="flex-row">
-                        <div className="flex-column">
+                        <div className="flex-column" style={{minWidth:"350px"}}>
                             <Card className="flex-grow"  titleProps={{ text: "Target Branches" }}>
-                                <div style={{width:"600px"}}>
-                                <div id="chartdiv" style={{ width: "200px", height: "200px" }}>
-   
+                            <div className="flex-row" style={{ flexWrap: "wrap" }}>                  
+                                <table> 
+                                    <thead>
+                                        <td></td>
+                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
+                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent</td>
+                                    </thead>             
+                                {this.targetBranches.map((items, index) => (
+                                    <tr>
+                                        <td className="body-m secondary-text">{items.name}</td>                                    
+                                        <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
+                                        <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+                                    </tr>
+                                ))}
+                                </table>
+                                </div>                                
+                            </Card>
+                        </div>
+                        <div className="flex-column" style={{minWidth:"500px"}}>
+                            <Card className="flex-grow">
+                            <div className="flex-row" style={{minWidth:"500px"}}>
+                                    <Doughnut data={targetBranchChartData}>                        
+                                    </Doughnut>
                                 </div>
-                                </div>
+                            </Card>
+                        </div>
+                    </div>
+                    <div className="flex-row">
+                        <div className="flex-column" style={{minWidth:"350px"}}>
+                            <Card className="flex-grow" titleProps={{ text: "PR Code Reviewers" }}>
+                                <div className="flex-row" style={{ flexWrap: "wrap" }}>             
+                                <table>                   
+                                    <thead>
+                                        <td></td>
+                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
+                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent of PRs</td>
+
+                                    </thead>
+                                {this.approverList.map((items, index) => (
+                                    <tr>
+                                        <td className="body-m secondary-text flex-center">{items.name}</td>
+                                        <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
+                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+
+                                    </tr>                                    
+                                ))}
+                                </table>
+                                </div>                                
+                            </Card>
+                        </div>
+                        <div className="flex-column" style={{minWidth:"500px"}}>
+                            <Card className="flex-grow">
+                            <div className="flex-row flex-grow flex-cell" style={{minWidth:"500px"}}>
+                                <Doughnut  data={reviewerPieChartData}></Doughnut>
+                            </div>
                             </Card>
                         </div>
                         <div className="flex-column">
-                            <Card className="flex-grow" titleProps={{ text: "PR Code Reviewers" }}>
-                                <div className="flex-row" style={{ flexWrap: "wrap" }}>                                
-                                {this.approverList.map((items, index) => (
-                                    <div className="flex-column" style={{ minWidth: "120px" }} key={index}>
-                                        <div className="body-m secondary-text">{items.name}</div>
-                                        <div className="body-m primary-text flex-center">{items.value} - {(items.value / this.PRCount * 100).toFixed(2)}%</div>
-                                    </div>
-                                ))}
+                            <Card>
+                                <div className="flex-row" style={{minWidth:"250px", height:"250px"}}>
+                                    <>
+                                    <Bar  data={reviewerBarChartData} options={stackedChartOptions} width={individualBarDims.width} height={barDims.height}></Bar>
+                                    </>
                                 </div>
                             </Card>
                         </div>
                     </div>
+
+                    <div className="flex-row">
+                    <div className="flex-column" style={{minWidth:"350px"}}>
+                            <Card className="flex-grow" titleProps={{ text: "Approval by Team/Groups" }}>
+                                <div className="flex-row" style={{ flexWrap: "wrap" }}>             
+                                <table>                   
+                                    <thead>
+                                        <td></td>
+                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
+                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent of PRs</td>
+
+                                    </thead>
+                                {this.approvalGroupList.map((items, index) => (
+                                    <tr>
+                                        <td className="body-m secondary-text flex-center">{items.name}</td>
+                                        <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
+                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+
+                                    </tr>                                    
+                                ))}
+                                </table>
+                                </div>                                
+                            </Card>
+                        </div>
+                        <Card>
+                            <div className="flex-row" style={{minWidth:"250px", height:"250px"}}>
+                                <>
+                                <Bar  data={groupBarChartData} options={stackedChartOptions} width={groupBarDims.width} height={barDims.height}></Bar>
+                                </>
+                            </div>
+                        </Card>
                     </div>
-                    <Card className="flex-row bolt-table-card">
-                        <Table className="flex-cell" ariaLabel="Table of Pull Requests" columns={fixedColumns} itemProvider={this.itemProvider} role="table" />
+                    </div>
+                    <Card className="flex-row">
+                        <div style={{height:"500px;"}}>
+                            <Table className="flex-cell" ariaLabel="Table of Pull Requests" columns={fixedColumns} itemProvider={this.itemProvider}  role="table" scrollable={true} />
+                        </div>
                     </Card>
                     {isToastVisible && (
                     <Toast

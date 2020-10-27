@@ -16,14 +16,9 @@
     "clean": "rimraf ./dist",
     "compile": "npm run clean && webpack --mode production",
     "compile:dev": "npm run clean && webpack --mode development",
-    "build": "npm run compile && npm run clean-garbage",
+    "build": "npm run compile",
     "build:dev": "npm run compile:dev && npm run postbuild",
     "postbuild": "npm run package-extension -- --rev-version",
-    "clean-garbage": "npm run remove-x && npm run remove-canvg && npm run remove-pdfmake && npm run remove-vx",
-    "remove-x": "rimraf ./dist/vendors~canvg",
-    "remove-canvg": "rimraf ./dist/xlsx",
-    "remove-pdfmake": "rimraf ./dist/vendors~pdfmake",
-    "remove-vx": "rimraf ./dist/vendors~xlsx",
     "package-extension": "tfx extension create --manifest-globs azure-devops-extension.json src/contributions/PRInfo/PRInfo.json",
     "publish-extension": "tfx extension publish --manifest-globs azure-devops-extension.json src/contributions/PRInfo/PRInfo.json"
   },
@@ -31,11 +26,11 @@
     "azure-devops-extension-api": "~1.157.0",
     "azure-devops-extension-sdk": "~2.0.11",
     "azure-devops-ui": "2.166.98",
+    "chart.js": "^2.9.4",
     "react": "~16.8.1",
+    "react-chartjs-2": "^2.10.0",
     "react-dom": "~16.8.1",
-    "react-scripts": "2.0.3",
-    "react-chartkick": "^0.4.1",
-    "chart.js": "^2.9.3"
+    "react-scripts": "2.0.3"
   },
   "devDependencies": {
     "@types/react": "~16.8.2",
