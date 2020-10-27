@@ -50,8 +50,8 @@
     ],
     "badges": [
         {
-            "href": "https://oneluckidev.visualstudio.com/OneLuckiDev/_apis/build/status/azDevOps-sprint-report",
-            "uri": "https://oneluckidev.visualstudio.com/OneLuckiDev/_apis/build/status/azDevOps-sprint-report",
+            "href": "https://oneluckidev.visualstudio.com/CCC2018/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
+            "uri": "https://oneluckidev.visualstudio.com/CCC2018/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
             "description": "Build for this Task run in Azure DevOps"
         }
     ],
