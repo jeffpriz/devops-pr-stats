@@ -8,7 +8,7 @@
                 "ms.vss-code-web.code-hub-group"
             ],
             "properties": {
-                "name": "PR Completetion Stats",
+                "name": "PR Completion Stats",
                 "order": 100,
                 "icon": "asset://static/barIcon.png",
                 "uri": "dist/PRInfo/context.html"

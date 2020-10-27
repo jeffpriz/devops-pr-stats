@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "prApprovalReport",
     "publisher": "OneLuckiDev",
-    "version": "0.0.196",
+    "version": "1.0.1",
     "name": "Pull Request Completion Report",
     "description": "This will give you insights in to who is approving the Pull Requests for your repository.  It will disply the overall number and the numbers over the last 30 days.",
     "public": false,
@@ -37,6 +37,14 @@
         },
         {
             "path": "dist",
+            "addressable": true
+        },
+        {
+            "path": "images/screenshot.PNG",
+            "addressable": true
+        },
+        {
+            "path": "images/repoHub.PNG",
             "addressable": true
         }
     ],

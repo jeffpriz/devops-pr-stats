@@ -73,7 +73,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
 
         this.approvalGroupList = []
         this.approvalGroupDictionary = new Map<string,statKeepers.IReviewWithVote>();
-        this.myBarChartDims = {height:200, width:500};
+        this.myBarChartDims = {height:250, width:500};
     }
 
     public async componentDidMount() {
@@ -392,7 +392,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
  {
      let width:number = 115;
 
-     let addwidth = listLength * 85;
+     let addwidth = listLength * 45;
 
      width = width + addwidth;
 
@@ -538,7 +538,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                         </div>
                         <div className="flex-column">
                             <Card>
-                                <div className="flex-row" style={{minWidth:"250px", height:"250px"}}>
+                                <div className="flex-row">
                                     <>
                                     <Bar  data={reviewerBarChartData} options={stackedChartOptions} width={individualBarDims.width} height={barDims.height}></Bar>
                                     </>
