@@ -304,6 +304,11 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
 
         let thisID = thisValue.displayName;
         let thisName = thisValue.displayName;
+        let nameParts = thisName.split("\\")
+        if(nameParts.length = 2)
+        {
+            thisName = nameParts[1];
+        }
         if(this.approvalGroupDictionary.has(thisID))
         {
             thisValue.vote
@@ -574,11 +579,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                         </Card>
                     </div>
                     </div>
-                    <Card className="flex-row">
-                        <div style={{height:"500px;"}}>
-                            <Table className="flex-cell" ariaLabel="Table of Pull Requests" columns={fixedColumns} itemProvider={this.itemProvider}  role="table" scrollable={true} />
-                        </div>
-                    </Card>
+
                     {isToastVisible && (
                     <Toast
                         ref={this.toastRef}

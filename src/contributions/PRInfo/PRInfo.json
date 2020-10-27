@@ -10,7 +10,7 @@
             "properties": {
                 "name": "PR Completetion Stats",
                 "order": 100,
-                "icon": "asset://static/logo_navbar_light_theme2.png",
+                "icon": "asset://static/barIcon.png",
                 "uri": "dist/PRInfo/context.html"
             }
         }
