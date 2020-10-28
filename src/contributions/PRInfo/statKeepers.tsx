@@ -28,6 +28,20 @@ export interface IReviewWithVote
     voteWait:number
 }
 
+export function CompareINameCountByValue(n1:INameCount, n2:INameCount)
+{
+    if (n1.value < n2.value) { return -1; }  
+    if (n1.value > n2.value) {return 1; }  
+    return 0;  
+
+}
+
+export function CompareReviewWithVoteByValue(r1: IReviewWithVote, r2: IReviewWithVote) {  
+    if (r1.value < r2.value) { return -1; }  
+    if (r1.value > r2.value) {return 1; }  
+    return 0;  
+} 
+
 
 export function getMillisecondsToTime(duration:number):IPRDuration {
     //let duration:number = endTime.valueOf() - startTime.valueOf();

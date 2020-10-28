@@ -10,11 +10,11 @@ steps:
 
 - script: |
     npm run build
-  displayName: 'Compile and package'
+  displayName: 'Compile'
 
 - script: |
     npm run package-extension
-  displayName: 'Compile and package'
+  displayName: 'package'
 
 - task: CopyFiles@2
   inputs:

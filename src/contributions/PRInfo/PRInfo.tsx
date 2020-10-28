@@ -125,12 +125,18 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                         this.approvalGroupList.push(value);
                     });
 
+                    //sort the lists
+                    this.approvalGroupList = this.approvalGroupList.sort(statKeepers.CompareReviewWithVoteByValue);
+                    this.approverList = this.approverList.sort(statKeepers.CompareReviewWithVoteByValue);
+                    this.targetBranches = this.targetBranches.sort(statKeepers.CompareINameCountByValue);
+
                     this.durationDisplayObject = statKeepers.getMillisecondsToTime(averageOpenTime);
                     this.setState({doneLoading:true});
 
+                    
 
                 }
-                console.log("Done with the PR Extension");
+                
             }           
             
         }
