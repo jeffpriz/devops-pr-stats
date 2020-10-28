@@ -241,9 +241,16 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
     private AddPRTargetBranchToStat(thisPR:GitPullRequest)
     {
         let branchnameOnly = thisPR.targetRefName.replace("refs/heads/","")
-        if(this.branchDictionary.has(branchnameOnly))
+        let branch = branchnameOnly;
+        if (branchnameOnly.split('/').length > 1)
         {
-            let thisref = this.branchDictionary.get(branchnameOnly);
+            branch = branchnameOnly.split('/')[0] + "/*";
+        }
+
+
+        if(this.branchDictionary.has(branch))
+        {
+            let thisref = this.branchDictionary.get(branch);
             if(thisref)
             {
                 thisref.value = thisref.value +1;                
@@ -252,7 +259,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         }
         else
         {
-            this.branchDictionary.set(branchnameOnly, {name: branchnameOnly, value:1});
+            this.branchDictionary.set(branch, {name: branch, value:1});
         }
     }
 
