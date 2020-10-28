@@ -1,11 +1,11 @@
 {
     "manifestVersion": 1,
-    "id": "prApprovalReport",
+    "id": "prApprovalReporttestversion",
     "publisher": "OneLuckiDev",
-    "version": "1.0.21",
+    "version": "1.0.22",
     "name": "Pull Request Completion Report",
     "description": "This will give you insights in to who is approving the Pull Requests for your repository.",
-    "public": true,
+    "public": false,
     "categories": [
         "Azure Repos"
     ],
@@ -48,23 +48,16 @@
             "addressable": true
         }
     ],
-    "badges": [
-        {
-            "href": "https://oneluckidev.visualstudio.com/CCC2018/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
-            "uri": "https://oneluckidev.visualstudio.com/CCC2018/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
-            "description": "Build for this extension run in Azure DevOps"
-        }
-    ],
     "contributions": [
         {
-            "id": "onelucki-pr-completion-report",
+            "id": "onelucki-pr-completion-report-test",
             "type": "ms.vss-web.hub",
             "description": "Hub to show stats and information about the Pull Request completions in this repository.",
             "targets": [
                 "ms.vss-code-web.code-hub-group"
             ],
             "properties": {
-                "name": "PR Completion Stats",
+                "name": "PR Completion Stats - test",
                 "order": 100,
                 "icon": "asset://static/barIcon.png",
                 "uri": "dist/PRInfo/context.html"
@@ -74,6 +67,13 @@
     "scopes": [
         "vso.code",
         "vso.code_status"
+    ],
+    "badges": [
+        {
+            "href": "https://oneluckidev.visualstudio.com/CCC2018/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
+            "uri": "https://oneluckidev.visualstudio.com/CCC2018/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
+            "description": "Build for this extension run in Azure DevOps"
+        }
     ],
     "links": {
         "support": {

@@ -542,19 +542,17 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                 </div>                                
                             </Card>
                         </div>
-                        <div className="flex-column" style={{minWidth:"500px"}}>
+                        <div className="flex-column" style={{minWidth:"450"}}>
                             <Card className="flex-grow">
-                            <div className="flex-row flex-grow flex-cell" style={{minWidth:"500px"}}>
-                                <Doughnut  data={reviewerPieChartData}></Doughnut>
+                            <div className="flex-row flex-grow flex-cell" style={{minWidth:"450px"}}>
+                                <Doughnut  data={reviewerPieChartData} height={325}></Doughnut>
                             </div>
                             </Card>
                         </div>
                         <div className="flex-column">
                             <Card>
-                                <div className="flex-row">
-                                    <>
-                                    <Bar  data={reviewerBarChartData} options={stackedChartOptions} width={individualBarDims.width} height={barDims.height}></Bar>
-                                    </>
+                                <div className="flex-row" style={{minWidth:500}}>                                    
+                                    <Bar data={reviewerBarChartData} options={stackedChartOptions} height={325}></Bar>                                    
                                 </div>
                             </Card>
                         </div>
@@ -584,9 +582,9 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                             </Card>
                         </div>
                         <Card>
-                            <div className="flex-row" style={{minWidth:"250px", height:"250px"}}>
+                            <div className="flex-row" style={{minWidth:groupBarDims.width, height:"350px"}}>
                                 <>
-                                <Bar  data={groupBarChartData} options={stackedChartOptions} width={groupBarDims.width} height={barDims.height}></Bar>
+                                    <Bar data={groupBarChartData} options={stackedChartOptions} height={350}></Bar>
                                 </>
                             </div>
                         </Card>
