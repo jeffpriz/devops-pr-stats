@@ -72,3 +72,21 @@ export function getMillisecondsToTime(duration:number):IPRDuration {
 
   }
   
+
+  export function getTotalCountForVoteReject(reviews:IReviewWithVote[]):number
+  {
+      let total:number =0;
+      reviews.forEach(r=>{
+          total += r.voteReject;
+      });
+      return total;
+  }
+
+  export function getTotalCountForVoteWait(reviews:IReviewWithVote[]):number
+  {
+      let total:number =0;
+      reviews.forEach(r=>{
+          total += r.voteWait;
+      });
+      return total;
+  }

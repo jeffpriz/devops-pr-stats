@@ -487,6 +487,14 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                             </div>
                         </Card>
                         </div>
+                        <div className="flex-column">
+                            <Card className="flex-grow">
+                            <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
+                                        <div className="body-m secondary-text">Count</div>
+                                        <div className="title-m flex-center">{this.PRCount}</div>
+                                    </div>       
+                            </Card>
+                        </div>
                     </div>
                     
                     <div className="flex-row">
@@ -510,10 +518,10 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                 </div>                                
                             </Card>
                         </div>
-                        <div className="flex-column" style={{minWidth:"500px"}}>
+                        <div className="flex-column" style={{minWidth:"400"}}>
                             <Card className="flex-grow">
                             <div className="flex-row" style={{minWidth:"500px"}}>
-                                    <Doughnut data={targetBranchChartData}>                        
+                                    <Doughnut data={targetBranchChartData} height={200}>                        
                                     </Doughnut>
                                 </div>
                             </Card>
@@ -542,17 +550,17 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                 </div>                                
                             </Card>
                         </div>
-                        <div className="flex-column" style={{minWidth:"450"}}>
+                        <div className="flex-column" style={{minWidth:"500"}}>
                             <Card className="flex-grow">
-                            <div className="flex-row flex-grow flex-cell" style={{minWidth:"450px"}}>
-                                <Doughnut  data={reviewerPieChartData} height={325}></Doughnut>
+                            <div className="flex-row flex-grow flex-cell" style={{minWidth:"500px"}}>
+                                <Doughnut  data={reviewerPieChartData} height={250}></Doughnut>
                             </div>
                             </Card>
                         </div>
                         <div className="flex-column">
                             <Card>
                                 <div className="flex-row" style={{minWidth:500}}>                                    
-                                    <Bar data={reviewerBarChartData} options={stackedChartOptions} height={325}></Bar>                                    
+                                    <Bar data={reviewerBarChartData} options={stackedChartOptions} height={250}></Bar>                                    
                                 </div>
                             </Card>
                         </div>
