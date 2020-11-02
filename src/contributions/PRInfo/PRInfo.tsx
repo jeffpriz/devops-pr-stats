@@ -23,6 +23,7 @@ import { Doughnut, Bar } from 'react-chartjs-2';
 import { Dropdown } from "azure-devops-ui/Dropdown";
 import { IListBoxItem } from "azure-devops-ui/ListBox";
 import { Observer } from "azure-devops-ui/Observer";
+import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
 
 
 interface IRepositoryServiceHubContentState {
@@ -58,9 +59,21 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
     public myBarChartDims:BarChartSize;
     public PRCount:number = 0;
     //private completedDate:Date;
+    private readonly TOP500_Selection_ID = "3650";
     private readonly dayMilliseconds:number = ( 24 * 60 * 60 * 1000);
     private completedDate:ObservableValue<Date>;
+    private displayText:ObservableValue<string>;
     private rawPRCount:number= 0;
+    private dateSelection:DropdownSelection;
+    private dateSelectionChoices = [
+        { text: "Last 7 Days", id: "7" },
+        { text: "Last 14 Days", id: "14" },
+        { text: "Last 30 Days", id: "30" },
+        { text: "Last 60 Days", id: "60" },
+        { text: "Last 90 Days", id: "90" },
+        { text: "Top 500 PRs", id: this.TOP500_Selection_ID }
+
+    ];
 
     constructor(props: {}) {
         super(props);
@@ -71,7 +84,12 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         
         this.myBarChartDims = {height:250, width:500};
 
-        this.completedDate = new ObservableValue<Date>(new Date(new Date().getTime() - (7 * this.dayMilliseconds)));
+
+        
+        this.dateSelection = new DropdownSelection();
+        this.dateSelection.select(2);
+        this.completedDate = new ObservableValue<Date>(this.getDateForSelectionIndex(2));
+        this.displayText =  new ObservableValue<string>("Completed Since " + this.completedDate.value.toLocaleDateString());
 
         this.branchDictionary = new Map<string,statKeepers.INameCount>();
         this.approvalGroupDictionary = new Map<string,statKeepers.IReviewWithVote>();
@@ -90,10 +108,21 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         this.approverDictionary.set(this.noReviewerText, {name:this.noReviewerText,value:0, notVote:0, voteApprove:0, voteReject:0, voteWait:0});
         this.approverList.value = [];
         this.targetBranches= [];
-        this.approvalGroupList= [];
+        this.approvalGroupList= [];        
     }
 
 
+    private getDateForSelectionIndex(ndx:number):Date
+    {
+        let dateOffset:number =0;
+        if(this.dateSelectionChoices.length >= ndx)
+        {
+            dateOffset = Number.parseInt(this.dateSelectionChoices[ndx].id);
+        }
+        let RetDate:Date = new Date(new Date().getTime() - (dateOffset * this.dayMilliseconds));
+
+        return RetDate;
+    }
 
     public async componentDidMount() {
         await SDK.init();
@@ -145,6 +174,14 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
 
     private onSelect = (event: React.SyntheticEvent<HTMLElement>, item: IListBoxItem<{}>) => {
         this.completedDate.value = new Date((new Date().getTime() - (Number.parseInt(item.id) * this.dayMilliseconds)))
+        if(item.id == this.TOP500_Selection_ID)
+        {
+            this.displayText.value = "Top 500";
+        }
+        else
+        {
+            this.displayText.value =  "Completed Since " + this.completedDate.value.toLocaleDateString();
+        }
         this.approverList.value = [];
         this.handleDateChange();
     };
@@ -196,7 +233,12 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         try
         {
             let tempapproverList:statKeepers.IReviewWithVote[] = [];
-            let averageOpenTime = this.totalDuration / this.PRCount;
+            let averageOpenTime =0;
+            if(this.PRCount > 0)
+            {
+                 averageOpenTime = this.totalDuration / this.PRCount;
+            }
+        
             
             this.branchDictionary.forEach((thisBranchItem) =>{
                 this.targetBranches.push(thisBranchItem);
@@ -518,74 +560,60 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                     <Page className="flex-grow prinfo-hub">                
                     <Header title="Repository PR Stats" titleSize={TitleSize.Large} />
 
-                    <div className="flex-center">
-                                    <div className="flex-row flex-center">
+                    
+                    <div>
+                    <div className="flex-row">
                                         <div className="flex-column"> 
-                                           Show Pull Requests Completed within:  <Dropdown
-                                                    ariaLabel="Basic"
-                                                    className="example-dropdown"
+                                        <span className="flex-cell">
+                                           Show Pull Requests Completed within: <Dropdown
+                                                    ariaLabel="Basic"                                                    
                                                     placeholder="Select an Option"
-                                                    items={[
-                                                        { text: "Last 7 Days", id: "7" },
-                                                        { text: "Last 14 Days", id: "14" },
-                                                        { text: "Last 30 Days", id: "30" },
-                                                        { text: "Last 60 Days", id: "60" },
-                                                        { text: "Last 90 Days", id: "90" },
-                                                        { text: "Top 500 PRs", id: "3650" }
-
-                                                    ]}
+                                                    width={500}
+                                                    items={this.dateSelectionChoices}
+                                                    selection={this.dateSelection}
                                                     onSelect={this.onSelect}
                                                 />  
-                                            <Observer selectedItem={this.completedDate}>
-                                                            {(props: { selectedItem: Date }) => {
-                                                            return (                                        
-                                                                    <span style={{ marginLeft: "8px", width: "150px" }}>
-                                                                        Selected Item: {props.selectedItem.toLocaleDateString()}{" "}
-                                                                        
-                                                                    </span>
-                                                            );
-                                                        }}
-                                            
-                                                
-                                            </Observer>
+                                            </span>
+                                            <span className="flex-cell">
+
+                                            </span>
                                         </div>
                                     </div>
-                                            <div className="flex-row flex-center">
-                                                <div className="flex-column">
-
-                                                </div> 
-
-                                                <Card className="flex-grow" titleProps={{ text: "Average Time Pull Requsts are Open" }}>
-                                                    <div className="flex-row" style={{ flexWrap: "wrap" }}>                                
-                                                            <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
-                                                                <div className="body-m secondary-text">Days</div>
-                                                                <div className="body-m primary-text flex-center">{this.durationDisplayObject.days.toString()}</div>
-                                                            </div>                        
-                                                            <div className="flex-column" style={{ minWidth: "70px" }} key={2}>
-                                                                <div className="body-m secondary-text">Hours</div>
-                                                                <div className="body-m primary-text flex-center">{this.durationDisplayObject.hours.toString()}</div>
-                                                            </div>                        
-                                                            <div className="flex-column" style={{ minWidth: "70px" }} key={3}>
-                                                                <div className="body-m secondary-text">Minutes</div>
-                                                                <div className="body-m primary-text flex-center">{this.durationDisplayObject.minutes.toString()}</div>
-                                                            </div>                        
-                                                            <div className="flex-column" style={{ minWidth: "70px" }} key={4}>
-                                                                <div className="body-m secondary-text">Seconds</div>
-                                                                <div className="body-m primary-text flex-center">{this.durationDisplayObject.seconds.toString()}</div>
-                                                            </div>                        
+                                            <div className="flex-row">
+                                            <div className="flex-column" style={{minWidth:"225px"}}>
+                                                        <Card titleProps={{text: this.displayText.value}}>          
+                                                        <div className="flex-cell" style={{ flexWrap: "wrap" }}>                                
+                                                                <div className="flex-column" style={{ minWidth: "200px" }} key={1}>                                              
+                                                                    <div className="body-m secondary-text" style={{minWidth:"120px"}}>Count</div>
+                                                                    <div className="title-m flex-center">{this.PRCount}</div>  
+                                                                </div>
+                                                        </div>                                                      
+                                                        </Card>
                                                     </div>
-                                                </Card>
-                                                
-                                                <div className="flex-column">
-                                                    <Card className="flex-grow">
-                                                    <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
-                                                                <div className="body-m secondary-text">Count</div>
-                                                                <div className="title-m flex-center">{this.PRCount}</div>
-                                                            </div>       
+                                                    <div className="flex-column">
+                                                    <Card titleProps={{ text: "Average Time Pull Requsts are Open" }}>
+                                                        <div className="flex-cell" style={{ flexWrap: "wrap" }}>                                
+                                                                <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
+                                                                    <div className="body-m secondary-text">Days</div>
+                                                                    <div className="body-m primary-text flex-center">{this.durationDisplayObject.days.toString()}</div>
+                                                                </div>                        
+                                                                <div className="flex-column" style={{ minWidth: "70px" }} key={2}>
+                                                                    <div className="body-m secondary-text">Hours</div>
+                                                                    <div className="body-m primary-text flex-center">{this.durationDisplayObject.hours.toString()}</div>
+                                                                </div>                        
+                                                                <div className="flex-column" style={{ minWidth: "70px" }} key={3}>
+                                                                    <div className="body-m secondary-text">Minutes</div>
+                                                                    <div className="body-m primary-text flex-center">{this.durationDisplayObject.minutes.toString()}</div>
+                                                                </div>                        
+                                                                <div className="flex-column" style={{ minWidth: "70px" }} key={4}>
+                                                                    <div className="body-m secondary-text">Seconds</div>
+                                                                    <div className="body-m primary-text flex-center">{this.durationDisplayObject.seconds.toString()}</div>
+                                                                </div>                        
+                                                        </div>
                                                     </Card>
                                                 </div>
-                                            </div>
-                                            
+
+                                            </div>      
                                             <div className="flex-row">
                                                 <div className="flex-column" style={{minWidth:"350px"}}>
                                                     <Card className="flex-grow"  titleProps={{ text: "Target Branches" }}>
