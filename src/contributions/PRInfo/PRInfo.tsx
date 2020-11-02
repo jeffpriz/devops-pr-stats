@@ -20,7 +20,9 @@ import { ZeroData, ZeroDataActionType } from "azure-devops-ui/ZeroData";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import * as statKeepers from "./statKeepers";
 import { Doughnut, Bar } from 'react-chartjs-2';
-
+import { Dropdown } from "azure-devops-ui/Dropdown";
+import { IListBoxItem } from "azure-devops-ui/ListBox";
+import { Observer } from "azure-devops-ui/Observer";
 
 
 interface IRepositoryServiceHubContentState {
@@ -40,41 +42,58 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
 
     private itemProvider:ObservableArray<ITableItem | ObservableValue<ITableItem | undefined>>;
     private toastRef: React.RefObject<Toast> = React.createRef<Toast>();
-    private totalDuration:number;
+    private totalDuration:number = 0;
     private durationDisplayObject:statKeepers.IPRDuration;
-    private targetBranches:statKeepers.INameCount[];
+    private targetBranches:statKeepers.INameCount[] = [];
     private branchDictionary:Map<string, statKeepers.INameCount>;
 
-    private approverList: statKeepers.IReviewWithVote[];
+    private approverList: ObservableValue<statKeepers.IReviewWithVote[]>;
     private approverDictionary:Map<string, statKeepers.IReviewWithVote>;
 
 
-    private approvalGroupList: statKeepers.IReviewWithVote[];
+    private approvalGroupList: statKeepers.IReviewWithVote[] =[];
     private approvalGroupDictionary: Map<string, statKeepers.IReviewWithVote>;
     public readonly noReviewerText:string ="No Reviewer";
 
     public myBarChartDims:BarChartSize;
     public PRCount:number = 0;
-    
-    
+    //private completedDate:Date;
+    private readonly dayMilliseconds:number = ( 24 * 60 * 60 * 1000);
+    private completedDate:ObservableValue<Date>;
+    private rawPRCount:number= 0;
+
     constructor(props: {}) {
         super(props);
         this.tableArrayData=this.getTableItemProvider([]);
         this.itemProvider = new ObservableArray<ITableItem | ObservableValue<ITableItem | undefined>>(this.getTableItemProvider([]).value);
-        this.state = { repository: null,   exception: "", isToastFadingOut:false, isToastVisible:false, foundCompletedPRs:true, doneLoading:false};
-        this.totalDuration = 0;
+        this.state = { repository: null,   exception: "", isToastFadingOut:false, isToastVisible:false, foundCompletedPRs:true, doneLoading:false};        
         this.durationDisplayObject = {days:0, hours:0, minutes:0, seconds:0, milliseconds:0};
-        this.targetBranches =[];
-        this.branchDictionary = new Map<string,statKeepers.INameCount>();
-
-        this.approverList = [];
-        this.approverDictionary = new Map<string, statKeepers.IReviewWithVote>();
-        this.approverDictionary.set(this.noReviewerText, {name:this.noReviewerText,value:0, notVote:0, voteApprove:0, voteReject:0, voteWait:0});
-
-        this.approvalGroupList = []
-        this.approvalGroupDictionary = new Map<string,statKeepers.IReviewWithVote>();
+        
         this.myBarChartDims = {height:250, width:500};
+
+        this.completedDate = new ObservableValue<Date>(new Date(new Date().getTime() - (7 * this.dayMilliseconds)));
+
+        this.branchDictionary = new Map<string,statKeepers.INameCount>();
+        this.approvalGroupDictionary = new Map<string,statKeepers.IReviewWithVote>();
+        this.approverDictionary = new Map<string, statKeepers.IReviewWithVote>();
+        this.approverList = new ObservableValue<statKeepers.IReviewWithVote[]>([]);
+        this.initCollectionValues()
+        
     }
+    private initCollectionValues()
+    {
+        this.totalDuration = 0;
+        this.PRCount = 0;
+        this.approvalGroupDictionary.clear();
+        this.approverDictionary.clear();
+        this.branchDictionary.clear();
+        this.approverDictionary.set(this.noReviewerText, {name:this.noReviewerText,value:0, notVote:0, voteApprove:0, voteReject:0, voteWait:0});
+        this.approverList.value = [];
+        this.targetBranches= [];
+        this.approvalGroupList= [];
+    }
+
+
 
     public async componentDidMount() {
         await SDK.init();
@@ -86,66 +105,134 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
             let prTableList:ITableItem[] = []
             let prTableArrayObj:ArrayItemProvider<ITableItem> = this.getTableItemProvider([]);
             
-            
-            
             if(repository)
             {            
-                let prList:GitPullRequest[] = await this.retrievePullRequestRowsFromADO(repository.id);
-                prTableList = await this.getPullRequestRows(prList);
-                prTableArrayObj = this.getTableItemProvider(prTableList);
-                this.PRCount = prTableList.length;
-                if(this.PRCount < 1)
+                this.setState({repository:repository});
+                //let prList:GitPullRequest[] = await this.retrievePullRequestRowsFromADO(repository.id);
+                await this.LoadData();                
+                
+                if(this.rawPRCount < 1)
                 {
-                    this.setState({foundCompletedPRs:false, repository:this.state.repository, isToastFadingOut:false, isToastVisible:false, exception:"", doneLoading:true});
+                    this.setState({foundCompletedPRs:false, isToastFadingOut:false, isToastVisible:false, exception:"", doneLoading:true});
                 }
                 else
                 {
-                    let averageOpenTime = this.totalDuration / this.PRCount;
-                    
-                    this.branchDictionary.forEach((thisBranchItem) =>{
-                        this.targetBranches.push(thisBranchItem);
-                    });
-                    this.approverDictionary.forEach((value)=>{
-                        //we will only put the "No Reviewer" item in if we had a PR with no reviewer
-                        if(value.name == this.noReviewerText)
-                        {
-                            if(value.value > 0)
-                            {
-                                this.approverList.push(value);
-                            }
-
-                        }
-                        else {
-                            this.approverList.push(value);
-                        }
-                        
-                    })
-
-                    this.approvalGroupDictionary.forEach((value)=>{
-                        this.approvalGroupList.push(value);
-                    });
-
-                    //sort the lists
-                    this.approvalGroupList = this.approvalGroupList.sort(statKeepers.CompareReviewWithVoteByValue);
-                    this.approverList = this.approverList.sort(statKeepers.CompareReviewWithVoteByValue);
-                    this.targetBranches = this.targetBranches.sort(statKeepers.CompareINameCountByValue);
-
-                    this.durationDisplayObject = statKeepers.getMillisecondsToTime(averageOpenTime);
-                    this.setState({doneLoading:true});
-
-                    
-
+                    this.setState({foundCompletedPRs:true, isToastFadingOut:false, isToastVisible:false, exception:"", doneLoading:true});
                 }
+                
                 
             }           
             
         }
-            catch(ex)
+        catch(ex)
         {
             exception = " Error Retrieving Pull Requests -- " + ex.toString();
+            this.toastError(exception);
             
         }
 
+    }
+
+    public async GetGitAPIClient(repositoryID:string)
+    {
+        if(repositoryID)
+        {            
+            let searchCriteria: GitPullRequestSearchCriteria = {status:PullRequestStatus.Completed, includeLinks:true, creatorId:"", reviewerId: "", repositoryId: repositoryID, sourceRefName: "",targetRefName:"", sourceRepositoryId: repositoryID};
+            let prList: GitPullRequest[] = await API.getClient(GitRestClient).getPullRequests(repositoryID, searchCriteria);
+
+        }
+    }
+
+    private onSelect = (event: React.SyntheticEvent<HTMLElement>, item: IListBoxItem<{}>) => {
+        this.completedDate.value = new Date((new Date().getTime() - (Number.parseInt(item.id) * this.dayMilliseconds)))
+        this.approverList.value = [];
+        this.handleDateChange();
+    };
+
+    private GetTableDataFunctions(prList:GitPullRequest[]):ArrayItemProvider<ITableItem>
+    {
+        if(prList)
+        {
+            let prTableList = this.getPullRequestRows(prList);
+            let prTableArrayObj = this.getTableItemProvider(prTableList);
+            return prTableArrayObj;
+        }
+        else {
+            this.setState({isToastVisible:true, exception:"The List of Pull Requests was not provided when attempting to build the table objects"});
+            return new ArrayItemProvider([]);
+        }
+    }
+
+
+    private async LoadData()
+    {
+        if(this.state.repository)
+        {
+            let prList:GitPullRequest[] = await this.retrievePullRequestRowsFromADO(this.state.repository.id);
+            let prTableList = await this.getPullRequestRows(prList);
+            this.rawPRCount =  prList.length;
+            this.GetTableDataFunctions(prList);
+            this.AssembleData();
+        }
+        else
+        {
+            this.setState({isToastVisible:true, exception:"The Repository ID was not found when attempting to load data!"});
+        }
+    }
+
+    private async handleDateChange()
+    {
+        
+        this.setState({doneLoading:false});
+        if(this.state.repository)
+        {            
+            this.LoadData();
+        }
+        this.setState({doneLoading:true});
+    }
+
+    private AssembleData()
+    {
+        try
+        {
+            let tempapproverList:statKeepers.IReviewWithVote[] = [];
+            let averageOpenTime = this.totalDuration / this.PRCount;
+            
+            this.branchDictionary.forEach((thisBranchItem) =>{
+                this.targetBranches.push(thisBranchItem);
+            });
+            this.approverDictionary.forEach((value)=>{
+                //we will only put the "No Reviewer" item in if we had a PR with no reviewer
+                if(value.name == this.noReviewerText)
+                {
+                    if(value.value > 0)
+                    {
+                        tempapproverList.push(value);
+                    }
+
+                }
+                else {
+                    tempapproverList.push(value);
+                }
+                
+            })
+
+            this.approvalGroupDictionary.forEach((value)=>{
+                this.approvalGroupList.push(value);
+            });
+
+            //sort the lists
+            this.approvalGroupList = this.approvalGroupList.sort(statKeepers.CompareReviewWithVoteByValue);
+            this.approverList.value = tempapproverList.sort(statKeepers.CompareReviewWithVoteByValue);
+            this.targetBranches = this.targetBranches.sort(statKeepers.CompareINameCountByValue);
+
+            this.durationDisplayObject = statKeepers.getMillisecondsToTime(averageOpenTime);
+        }
+        catch(ex)
+        {
+            this.toastError("Assembling data: " + ex);
+        }
+        this.setState({doneLoading:true});
     }
 
     public AddRowItem(item:ITableItem)
@@ -165,7 +252,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
             status:item.status,
             reviewerCount: item.reviewerCount
         };
-        announce("Asynchronous row loaded");
+        
     }
 
 
@@ -174,58 +261,63 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
     {
         let searchCriteria: GitPullRequestSearchCriteria = {status:PullRequestStatus.Completed, includeLinks:false, creatorId: "", reviewerId: "", repositoryId: "", sourceRefName: "",targetRefName:"", sourceRepositoryId: ""};
         const client = getClient(GitRestClient);
-        let prList = client.getPullRequests(repositoryId, searchCriteria);
+        let prList = client.getPullRequests(repositoryId, searchCriteria,undefined,undefined,undefined,500);
 
         return prList;
     }
 
 
+
     ///
     public getPullRequestRows(prList:GitPullRequest[]): ITableItem[]
     {
-
-        
+       
         let rows:ITableItem[] = [];
         try{
             if(prList)
             {        
+                this.initCollectionValues();
                 prList.forEach((value)=>{
-                    let reviewerName = "-- no reviewers --"
-                    if(value.reviewers.length > 0)
+                    if(value.closedDate >= this.completedDate.value)
                     {
-                        reviewerName = value.reviewers[0].displayName;
-                    }                    
-                    let PROpenDuration = value.closedDate.valueOf() - value.creationDate.valueOf();
-                     
-                    let thisPR:ITableItem = {createdBy:value.createdBy.displayName, prCreatedDate:value.creationDate, prCompleteDate:value.closedDate, sourceBranch:value.sourceRefName, targetBranch: value.targetRefName, id: value.pullRequestId.toString(), prOpenTime: PROpenDuration, status:value.status.toString(), reviewerCount:value.reviewers.length};
-                    
-                    this.AddPRDurationToTotalDuration(value);
-                    this.AddPRTargetBranchToStat(value);
-
-                    this.AddPRReviewerToStat(value);
-
-                    rows.push(thisPR);
-                    this.AddRowItem(thisPR);
-
-                    //this.AddRowItem(thisPR);
-                    if(this.state.foundCompletedPRs == false)
-                    {
-                        this.setState({foundCompletedPRs:true, repository:this.state.repository, isToastFadingOut:false, isToastVisible:false, exception:"", doneLoading:true});
+                        let reviewerName = "-- no reviewers --"
+                        if(value.reviewers.length > 0)
+                        {
+                            reviewerName = value.reviewers[0].displayName;
+                        }                    
+                        let PROpenDuration = value.closedDate.valueOf() - value.creationDate.valueOf();
                         
-                    }
-                    if(this.state.doneLoading == false){
-                        this.setState({doneLoading:true});
+                        let thisPR:ITableItem = {createdBy:value.createdBy.displayName, prCreatedDate:value.creationDate, prCompleteDate:value.closedDate, sourceBranch:value.sourceRefName, targetBranch: value.targetRefName, id: value.pullRequestId.toString(), prOpenTime: PROpenDuration, status:value.status.toString(), reviewerCount:value.reviewers.length};
+                        
+                        this.AddPRDurationToTotalDuration(value);
+                        this.AddPRTargetBranchToStat(value);
+
+                        this.AddPRReviewerToStat(value);
+
+                        rows.push(thisPR);
+                        this.AddRowItem(thisPR);
+
+                        //this.AddRowItem(thisPR);
+                        if(this.state.foundCompletedPRs == false)
+                        {
+                            this.setState({foundCompletedPRs:true, repository:this.state.repository, isToastFadingOut:false, isToastVisible:false, exception:"", doneLoading:true});
+                            
+                        }
+                        if(this.state.doneLoading == false){
+                            this.setState({doneLoading:true});
+                        }
+                        this.PRCount +=1;
                     }
                 });
             }
             else{
-                this.setState({foundCompletedPRs:false, repository:this.state.repository, isToastFadingOut:false, isToastVisible:false, exception:"", doneLoading:true});
+                this.setState({doneLoading:true});
             }
         }
-            catch(ex)
+        catch(ex)
         {
             let exception = " Error Retrieving Pull Requests -- " + ex.toString();
-            this.toastError(exception)
+            this.toastError("Getting Rows: " + exception);
         }
 
         return rows;
@@ -364,15 +456,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
 
     }
 
-    public async GetGitAPIClient(repositoryID:string)
-    {
-        if(repositoryID)
-        {            
-            let searchCriteria: GitPullRequestSearchCriteria = {status:PullRequestStatus.Completed, includeLinks:true, creatorId:"", reviewerId: "", repositoryId: repositoryID, sourceRefName: "",targetRefName:"", sourceRepositoryId: repositoryID};
-            let prList: GitPullRequest[] = await API.getClient(GitRestClient).getPullRequests(repositoryID, searchCriteria);
 
-        }
-    }
 
     public getTableItemProvider(prRows:ITableItem[]):ArrayItemProvider<ITableItem>
     {
@@ -390,31 +474,6 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
     }
 
 
-//    private reWriteChartData(inData:statKeepers.INameCount[]):DataEntry[]
- //   {
- //       let returnData:DataEntry[] = [];
- //       inData.forEach(value =>{
- //           let i:DataEntry = {title: value.name, value:value.value, color:this.randomColor()};
- //           returnData.push(i)
- //       });
- //       return returnData;
- //   }
-
-
- private getChartWidth(listLength:number):number
- {
-     let width:number = 115;
-
-     let addwidth = listLength * 45;
-
-     width = width + addwidth;
-
-     if(width < 300)
-     {
-         width=300;
-     }
-     return width;
- }
 
 
 
@@ -424,14 +483,10 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         let foundCompletedPRs = this.state.foundCompletedPRs;
         let doneLoading = this.state.doneLoading;
         let targetBranchChartData = getPieChartInfo(this.targetBranches);
-        let reviewerPieChartData = getPieChartInfo(this.approverList);
+        let reviewerPieChartData = getPieChartInfo(this.approverList.value);
         let groupBarChartData = getStackedBarChartInfo(this.approvalGroupList,"");
-        let reviewerBarChartData = getStackedBarChartInfo(this.approverList, this.noReviewerText);
-        let barDims:BarChartSize = this.myBarChartDims;
-        let approverChartWidth = this.getChartWidth(this.approverList.length);
-        let individualBarDims:BarChartSize = {height:this.myBarChartDims.height, width:approverChartWidth}
-        let groupChartWidth = this.getChartWidth(this.approvalGroupList.length);
-        let groupBarDims:BarChartSize = {height:this.myBarChartDims.height, width:groupChartWidth}
+        let reviewerBarChartData = getStackedBarChartInfo(this.approverList.value, this.noReviewerText);
+        
         if(doneLoading)
         {
 
@@ -464,141 +519,183 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                     <Header title="Repository PR Stats" titleSize={TitleSize.Large} />
 
                     <div className="flex-center">
-                    <div className="flex-row flex-center">
-                        <div className="flex-column">
-                        <Card className="flex-grow" titleProps={{ text: "Average Time Pull Requsts are Open" }}>
-                            <div className="flex-row" style={{ flexWrap: "wrap" }}>                                
-                                    <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
-                                        <div className="body-m secondary-text">Days</div>
-                                        <div className="body-m primary-text flex-center">{this.durationDisplayObject.days.toString()}</div>
-                                    </div>                        
-                                    <div className="flex-column" style={{ minWidth: "70px" }} key={2}>
-                                        <div className="body-m secondary-text">Hours</div>
-                                        <div className="body-m primary-text flex-center">{this.durationDisplayObject.hours.toString()}</div>
-                                    </div>                        
-                                    <div className="flex-column" style={{ minWidth: "70px" }} key={3}>
-                                        <div className="body-m secondary-text">Minutes</div>
-                                        <div className="body-m primary-text flex-center">{this.durationDisplayObject.minutes.toString()}</div>
-                                    </div>                        
-                                    <div className="flex-column" style={{ minWidth: "70px" }} key={4}>
-                                        <div className="body-m secondary-text">Seconds</div>
-                                        <div className="body-m primary-text flex-center">{this.durationDisplayObject.seconds.toString()}</div>
-                                    </div>                        
-                            </div>
-                        </Card>
-                        </div>
-                        <div className="flex-column">
-                            <Card className="flex-grow">
-                            <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
-                                        <div className="body-m secondary-text">Count</div>
-                                        <div className="title-m flex-center">{this.PRCount}</div>
-                                    </div>       
-                            </Card>
-                        </div>
-                    </div>
-                    
-                    <div className="flex-row">
-                        <div className="flex-column" style={{minWidth:"350px"}}>
-                            <Card className="flex-grow"  titleProps={{ text: "Target Branches" }}>
-                            <div className="flex-row" style={{ flexWrap: "wrap" }}>                  
-                                <table> 
-                                    <thead>
-                                        <td></td>
-                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
-                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent</td>
-                                    </thead>             
-                                {this.targetBranches.map((items, index) => (
-                                    <tr>
-                                        <td className="body-m secondary-text">{items.name}</td>                                    
-                                        <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
-                                        <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
-                                    </tr>
-                                ))}
-                                </table>
-                                </div>                                
-                            </Card>
-                        </div>
-                        <div className="flex-column" style={{minWidth:"400"}}>
-                            <Card className="flex-grow">
-                            <div className="flex-row" style={{minWidth:"500px"}}>
-                                    <Doughnut data={targetBranchChartData} height={200}>                        
-                                    </Doughnut>
-                                </div>
-                            </Card>
-                        </div>
-                    </div>
-                    <div className="flex-row">
-                        <div className="flex-column" style={{minWidth:"350px"}}>
-                            <Card className="flex-grow" titleProps={{ text: "PR Code Reviewers" }}>
-                                <div className="flex-row" style={{ flexWrap: "wrap" }}>             
-                                <table>                   
-                                    <thead>
-                                        <td></td>
-                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
-                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent of PRs</td>
+                                    <div className="flex-row flex-center">
+                                        <div className="flex-column"> 
+                                           Show Pull Requests Completed within:  <Dropdown
+                                                    ariaLabel="Basic"
+                                                    className="example-dropdown"
+                                                    placeholder="Select an Option"
+                                                    items={[
+                                                        { text: "Last 7 Days", id: "7" },
+                                                        { text: "Last 14 Days", id: "14" },
+                                                        { text: "Last 30 Days", id: "30" },
+                                                        { text: "Last 60 Days", id: "60" },
+                                                        { text: "Last 90 Days", id: "90" },
+                                                        { text: "Top 500 PRs", id: "3650" }
 
-                                    </thead>
-                                {this.approverList.map((items, index) => (
-                                    <tr>
-                                        <td className="body-m secondary-text flex-center">{items.name}</td>
-                                        <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
-                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+                                                    ]}
+                                                    onSelect={this.onSelect}
+                                                />  
+                                            <Observer selectedItem={this.completedDate}>
+                                                            {(props: { selectedItem: Date }) => {
+                                                            return (                                        
+                                                                    <span style={{ marginLeft: "8px", width: "150px" }}>
+                                                                        Selected Item: {props.selectedItem.toLocaleDateString()}{" "}
+                                                                        
+                                                                    </span>
+                                                            );
+                                                        }}
+                                            
+                                                
+                                            </Observer>
+                                        </div>
+                                    </div>
+                                            <div className="flex-row flex-center">
+                                                <div className="flex-column">
 
-                                    </tr>                                    
-                                ))}
-                                </table>
-                                </div>                                
-                            </Card>
-                        </div>
-                        <div className="flex-column" style={{minWidth:"500"}}>
-                            <Card className="flex-grow">
-                            <div className="flex-row flex-grow flex-cell" style={{minWidth:"500px"}}>
-                                <Doughnut  data={reviewerPieChartData} height={250}></Doughnut>
-                            </div>
-                            </Card>
-                        </div>
-                        <div className="flex-column">
-                            <Card>
-                                <div className="flex-row" style={{minWidth:500}}>                                    
-                                    <Bar data={reviewerBarChartData} options={stackedChartOptions} height={250}></Bar>                                    
-                                </div>
-                            </Card>
-                        </div>
-                    </div>
+                                                </div> 
 
-                    <div className="flex-row">
-                    <div className="flex-column" style={{minWidth:"350px"}}>
-                            <Card className="flex-grow" titleProps={{ text: "Approval by Team/Groups" }}>
-                                <div className="flex-row" style={{ flexWrap: "wrap" }}>             
-                                <table>                   
-                                    <thead>
-                                        <td></td>
-                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
-                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent of PRs</td>
+                                                <Card className="flex-grow" titleProps={{ text: "Average Time Pull Requsts are Open" }}>
+                                                    <div className="flex-row" style={{ flexWrap: "wrap" }}>                                
+                                                            <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
+                                                                <div className="body-m secondary-text">Days</div>
+                                                                <div className="body-m primary-text flex-center">{this.durationDisplayObject.days.toString()}</div>
+                                                            </div>                        
+                                                            <div className="flex-column" style={{ minWidth: "70px" }} key={2}>
+                                                                <div className="body-m secondary-text">Hours</div>
+                                                                <div className="body-m primary-text flex-center">{this.durationDisplayObject.hours.toString()}</div>
+                                                            </div>                        
+                                                            <div className="flex-column" style={{ minWidth: "70px" }} key={3}>
+                                                                <div className="body-m secondary-text">Minutes</div>
+                                                                <div className="body-m primary-text flex-center">{this.durationDisplayObject.minutes.toString()}</div>
+                                                            </div>                        
+                                                            <div className="flex-column" style={{ minWidth: "70px" }} key={4}>
+                                                                <div className="body-m secondary-text">Seconds</div>
+                                                                <div className="body-m primary-text flex-center">{this.durationDisplayObject.seconds.toString()}</div>
+                                                            </div>                        
+                                                    </div>
+                                                </Card>
+                                                
+                                                <div className="flex-column">
+                                                    <Card className="flex-grow">
+                                                    <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
+                                                                <div className="body-m secondary-text">Count</div>
+                                                                <div className="title-m flex-center">{this.PRCount}</div>
+                                                            </div>       
+                                                    </Card>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex-row">
+                                                <div className="flex-column" style={{minWidth:"350px"}}>
+                                                    <Card className="flex-grow"  titleProps={{ text: "Target Branches" }}>
+                                                    <div className="flex-row" style={{ flexWrap: "wrap" }}>                  
+                                                        <table> 
+                                                            <thead>
+                                                                <td></td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent</td>
+                                                            </thead>             
+                                                        {this.targetBranches.map((items, index) => (
+                                                            <tr>
+                                                                <td className="body-m secondary-text">{items.name}</td>                                    
+                                                                <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
+                                                                <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+                                                            </tr>
+                                                        ))}
+                                                        </table>
+                                                        </div>                                
+                                                    </Card>
+                                                </div>
+                                                <div className="flex-column" style={{minWidth:"400"}}>
+                                                    <Card className="flex-grow">
+                                                    <div className="flex-row" style={{minWidth:"500px"}}>
+                                                            <Doughnut data={targetBranchChartData} height={200}>                        
+                                                            </Doughnut>
+                                                        </div>
+                                                    </Card>
+                                                </div>
+                                            </div>
+                                            <div className="flex-row">
+                                                <div className="flex-column" style={{minWidth:"350px"}}>
+                                                    <Card className="flex-grow" titleProps={{ text: "PR Code Reviewers" }}>
+                                                        <div className="flex-row" style={{ flexWrap: "wrap" }}>             
+                                                        <table>                   
+                                                            <thead>
+                                                                <td></td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent of PRs</td>
 
-                                    </thead>
-                                {this.approvalGroupList.map((items, index) => (
-                                    <tr>
-                                        <td className="body-m secondary-text flex-center">{items.name}</td>
-                                        <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
-                                        <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+                                                            </thead>
+                                                            <Observer selectedItem={this.approverList}>
+                                                                {(props: { selectedItem: statKeepers.IReviewWithVote[] }) => {
+                                                                    return ( 
+                                                                        <>
+                                                                            {props.selectedItem.map((items, index) => (
+                                                                            <tr>
+                                                                                <td className="body-m secondary-text flex-center">{items.name}</td>
+                                                                                <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
+                                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                        </>
+                                                                    )}
+                                                                }
+                                                            </Observer>
+                                                        </table>
+                                                        </div>                                
+                                                    </Card>
+                                                </div>
+                                                <div className="flex-column" style={{minWidth:"500"}}>
+                                                    <Card className="flex-grow">
+                                                    <div className="flex-row flex-grow flex-cell" style={{minWidth:"500px"}}>
+                                                        <Doughnut  data={reviewerPieChartData} height={250}></Doughnut>
+                                                    </div>
+                                                    </Card>
+                                                </div>
+                                                <div className="flex-column">
+                                                    <Card>
+                                                        <div className="flex-row" style={{minWidth:500}}>                                    
+                                                            <Bar data={reviewerBarChartData} options={stackedChartOptions} height={250}></Bar>                                    
+                                                        </div>
+                                                    </Card>
+                                                </div>
+                                            </div>
 
-                                    </tr>                                    
-                                ))}
-                                </table>
-                                </div>                                
-                            </Card>
-                        </div>
-                        <Card>
-                            <div className="flex-row" style={{minWidth:groupBarDims.width, height:"350px"}}>
-                                <>
-                                    <Bar data={groupBarChartData} options={stackedChartOptions} height={350}></Bar>
-                                </>
-                            </div>
-                        </Card>
-                    </div>
-                    </div>
+                                            <div className="flex-row">
+                                            <div className="flex-column" style={{minWidth:"350px"}}>
+                                                    <Card className="flex-grow" titleProps={{ text: "Approval by Team/Groups" }}>
+                                                        <div className="flex-row" style={{ flexWrap: "wrap" }}>             
+                                                        <table>                   
+                                                            <thead>
+                                                                <td></td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent of PRs</td>
 
+                                                            </thead>
+                                                        {this.approvalGroupList.map((items, index) => (
+                                                            <tr>
+                                                                <td className="body-m secondary-text flex-center">{items.name}</td>
+                                                                <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+
+                                                            </tr>                                    
+                                                        ))}
+                                                        </table>
+                                                        </div>                                
+                                                    </Card>
+                                                    
+                                                </div>
+                                                <Card>
+                                                    <div className="flex-row" style={{minWidth:this.myBarChartDims.width, height:"350px"}}>
+                                                        <>
+                                                            <Bar data={groupBarChartData} options={stackedChartOptions} height={350}></Bar>
+                                                        </>
+                                                    </div>
+                                                </Card>
+                                                
+                                            </div>
+                                            </div>
                     {isToastVisible && (
                     <Toast
                         ref={this.toastRef}
