@@ -595,19 +595,19 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                         <div className="flex-cell" style={{ flexWrap: "wrap" }}>                                
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
                                                                     <div className="body-m secondary-text">Days</div>
-                                                                    <div className="body-m primary-text flex-center">{this.durationDisplayObject.days.toString()}</div>
+                                                                    <div className="title-m primary-text flex-center">{this.durationDisplayObject.days.toString()}</div>
                                                                 </div>                        
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={2}>
                                                                     <div className="body-m secondary-text">Hours</div>
-                                                                    <div className="body-m primary-text flex-center">{this.durationDisplayObject.hours.toString()}</div>
+                                                                    <div className="title-m primary-text flex-center">{this.durationDisplayObject.hours.toString()}</div>
                                                                 </div>                        
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={3}>
                                                                     <div className="body-m secondary-text">Minutes</div>
-                                                                    <div className="body-m primary-text flex-center">{this.durationDisplayObject.minutes.toString()}</div>
+                                                                    <div className="title-m primary-text flex-center">{this.durationDisplayObject.minutes.toString()}</div>
                                                                 </div>                        
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={4}>
                                                                     <div className="body-m secondary-text">Seconds</div>
-                                                                    <div className="body-m primary-text flex-center">{this.durationDisplayObject.seconds.toString()}</div>
+                                                                    <div className="title-m primary-text flex-center">{this.durationDisplayObject.seconds.toString()}</div>
                                                                 </div>                        
                                                         </div>
                                                     </Card>
