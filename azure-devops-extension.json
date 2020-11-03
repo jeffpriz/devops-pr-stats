@@ -50,8 +50,8 @@
     ],
     "badges": [
         {
-            "href": "https://oneluckidev.visualstudio.com/CCC2018/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
-            "uri": "https://oneluckidev.visualstudio.com/CCC2018/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
+            "href": "https://oneluckidev.visualstudio.com/OneLuckiDev/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
+            "uri": "https://oneluckidev.visualstudio.com/OneLuckiDev/_apis/build/status/jeffpriz.devops-pr-stats?branchName=main",
             "description": "Build for this extension run in Azure DevOps"
         }
     ],

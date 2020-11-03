@@ -128,6 +128,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         await SDK.init();
         try{
             const repoSvc = await SDK.getService<IVersionControlRepositoryService>(GitServiceIds.VersionControlRepositoryService);
+            const wiSvc = await SDK.getService(CommonServiceIds.LocationService)
             var repository = await repoSvc.getCurrentGitRepository();
             var exception = "";       
             //var count:number = -1;
