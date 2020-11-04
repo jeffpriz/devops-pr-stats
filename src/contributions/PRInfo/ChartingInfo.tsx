@@ -13,9 +13,11 @@ export interface IChartData
 
 export interface IBarChartDataset
 {
+    type:string,
     label:string,
     data:number[],
-    backgroundColor:string
+    backgroundColor:string,
+    fill:boolean
 }
 
 export interface IBarChartData
@@ -103,15 +105,74 @@ export function getPieChartInfo(data:statKeepers.INameCount[]):IChartData
     return d;
 }
 
+
+export function getDurationBarChartInfo(data:statKeepers.IDurationSlice[]):IBarChartData
+{
+  var d:IBarChartData = {labels:[], datasets:[]};
+  var durationSliceDataset:IBarChartDataset= {type:"bar", label:"Avg. Duration For Dates (hrs)", backgroundColor:ApproveChartColor, data:[], fill:true};
+  var runningAverageDataset:IBarChartDataset={type:"line", label:"Running Average Duration (hrs)", backgroundColor:WaitVoteChartColor, data:[], fill:false};
+
+  if(data.length > 26)
+  {
+    let endofData =  data.length;
+    let datatostartfrom = data.length-26;
+    data = data.slice(datatostartfrom,endofData);
+  }
+  data.forEach((thisSlice)=>{
+      d.labels.push(thisSlice.startDate.toLocaleDateString())
+      let thissliceAvgDuration:number = 0;
+      let thissliceRunningDuration:number =0;
+      if(thisSlice.PRCount > 0)
+      {
+        thissliceAvgDuration = Number.parseFloat((thisSlice.minutes / thisSlice.PRCount / 60).toFixed(2));
+      }
+      if(thisSlice.runningTotalCount > 0)
+      {
+        thissliceRunningDuration = Number.parseFloat((Math.floor(thisSlice.runningTotalMinutes / thisSlice.runningTotalCount)/60).toFixed(2));
+      }
+      
+      
+      durationSliceDataset.data.push(thissliceAvgDuration);
+      runningAverageDataset.data.push(thissliceRunningDuration);
+  });
+  d.datasets.push(durationSliceDataset);
+  d.datasets.push(runningAverageDataset);
+  return d;
+
+}
+
+export function getPullRequestsCompletedChartInfo(data:statKeepers.IDurationSlice[]):IBarChartData
+{
+  var d:IBarChartData = {labels:[], datasets:[]};
+  var durationSliceDataset:IBarChartDataset= {type:"bar", label:"Closed Pull Requests", backgroundColor:ApproveChartColor, data:[], fill:true};
+  if(data.length > 26)
+  {
+    let endofData =  data.length;
+    let datatostartfrom = data.length-26;
+    data = data.slice(datatostartfrom,endofData);
+  }
+  
+  data.forEach((thisSlice)=>{
+    d.labels.push(thisSlice.startDate.toLocaleDateString())
+    
+    durationSliceDataset.data.push(thisSlice.PRCount);
+    
+  });
+  d.datasets.push(durationSliceDataset);
+  
+  return d;
+
+}
+
 export function getStackedBarChartInfo(data:statKeepers.IReviewWithVote[], exclude:string):IBarChartData
 {
     var d:IBarChartData = {labels:[], datasets:[]};
     var countWaitVotes = statKeepers.getTotalCountForVoteWait(data);
     var countRejectVotes = statKeepers.getTotalCountForVoteReject(data);
-    var approveDS:IBarChartDataset = {label:"Approve Votes", backgroundColor:ApproveChartColor, data:[]};
-    var rejectDS:IBarChartDataset = {label:"Reject Votes", backgroundColor:RejectVoteChartColor, data:[]};
-    var noVoteDS:IBarChartDataset = {label:"Did Not Vote", backgroundColor:NoVoteChartColor, data:[]};
-    var waitVoteDS:IBarChartDataset = {label:"Waiting For Author", backgroundColor:WaitVoteChartColor, data:[]};
+    var approveDS:IBarChartDataset = {label:"Approve Votes", backgroundColor:ApproveChartColor, data:[],type:"bar", fill:true};
+    var rejectDS:IBarChartDataset = {label:"Reject Votes", backgroundColor:RejectVoteChartColor, data:[], type:"bar", fill:true};
+    var noVoteDS:IBarChartDataset = {label:"Did Not Vote", backgroundColor:NoVoteChartColor, data:[], type:"bar", fill:true};
+    var waitVoteDS:IBarChartDataset = {label:"Waiting For Author", backgroundColor:WaitVoteChartColor, data:[], type:"bar", fill:true};
 
     data.forEach((thisData)=>{
         if(thisData.name != exclude)
