@@ -40,7 +40,15 @@
             "addressable": true
         },
         {
-            "path": "images/screenshot.PNG",
+            "path": "images/reviewerVote.JPG",
+            "addressable": true
+        },
+        {
+            "path": "images/targetBranches.JPG",
+            "addressable": true
+        },
+        {
+            "path": "images/trendChart.JPG",
             "addressable": true
         },
         {
