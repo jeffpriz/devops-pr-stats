@@ -7,10 +7,7 @@ This Extension to Azure DevOps will give you a new Hub in your repositories sect
 
 
 ## Images
-
-![json text](images/repoHub.png)
-
-![task output](images/screenshot.PNG)
+![json text](images/repoHub.PNG)
 
 
 ## Source
