@@ -9,12 +9,11 @@ import { CommonServiceIds, getClient } from "azure-devops-extension-api";
 import { showRootComponent } from "../../Common";
 import { GitRepository, IdentityRefWithVote } from "azure-devops-extension-api/Git/Git";
 import {  fixedColumns,  ITableItem } from "./TableData";
-import { getPieChartInfo, getStackedBarChartInfo, stackedChartOptions,BarChartSize } from "./ChartingInfo";
+import { getPieChartInfo, getStackedBarChartInfo, stackedChartOptions,BarChartSize, getDurationBarChartInfo,getPullRequestsCompletedChartInfo } from "./ChartingInfo";
 import { ArrayItemProvider } from "azure-devops-ui/Utilities/Provider";
 import { Card } from "azure-devops-ui/Card";
 import { Table } from "azure-devops-ui/Table";
 import { ObservableArray, ObservableValue } from "azure-devops-ui/Core/Observable";
-import { announce } from "azure-devops-ui/Core/Util/Accessibility";
 import { Toast } from "azure-devops-ui/Toast";
 import { ZeroData, ZeroDataActionType } from "azure-devops-ui/ZeroData";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
@@ -24,6 +23,7 @@ import { Dropdown } from "azure-devops-ui/Dropdown";
 import { IListBoxItem } from "azure-devops-ui/ListBox";
 import { Observer } from "azure-devops-ui/Observer";
 import { DropdownSelection } from "azure-devops-ui/Utilities/DropdownSelection";
+import { tooltipString } from "azure-devops-ui/Utilities/Date";
 
 
 interface IRepositoryServiceHubContentState {
@@ -65,6 +65,8 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
     private displayText:ObservableValue<string>;
     private rawPRCount:number= 0;
     private dateSelection:DropdownSelection;
+    private mondayBeforeEarliestPR:Date = new Date();
+    private durationSlices:statKeepers.IDurationSlice[] = [];
     private dateSelectionChoices = [
         { text: "Last 7 Days", id: "7" },
         { text: "Last 14 Days", id: "14" },
@@ -207,10 +209,14 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         if(this.state.repository)
         {
             let prList:GitPullRequest[] = await this.retrievePullRequestRowsFromADO(this.state.repository.id);
+            prList = prList.sort(statKeepers.ComparePRClosedDate);
             let prTableList = await this.getPullRequestRows(prList);
             this.rawPRCount =  prList.length;
             this.GetTableDataFunctions(prList);
             this.AssembleData();
+            //this.mondayBeforeEarliestPR = statKeepers.getMondayBeforeEarliestPR(prList);
+            this.mondayBeforeEarliestPR = statKeepers.getMondayBeforeEarliestPR(prList);
+            this.durationSlices = statKeepers.getPRDurationSlices(prList);
         }
         else
         {
@@ -529,7 +535,8 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         let reviewerPieChartData = getPieChartInfo(this.approverList.value);
         let groupBarChartData = getStackedBarChartInfo(this.approvalGroupList,"");
         let reviewerBarChartData = getStackedBarChartInfo(this.approverList.value, this.noReviewerText);
-        
+        let durationTrenChartData = getDurationBarChartInfo(this.durationSlices);
+        let closedPRChartData = getPullRequestsCompletedChartInfo(this.durationSlices);
         if(doneLoading)
         {
 
@@ -581,7 +588,8 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                         </div>
                                     </div>
                                             <div className="flex-row">
-                                            <div className="flex-column" style={{minWidth:"225px"}}>
+                                                    <div className="flex-column" style={{minWidth:"225px"}}>
+                                                        <div className="flex-row">
                                                         <Card titleProps={{text: this.displayText.value}}>          
                                                         <div className="flex-cell" style={{ flexWrap: "wrap" }}>                                
                                                                 <div className="flex-column" style={{ minWidth: "200px" }} key={1}>                                              
@@ -590,8 +598,15 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                                 </div>
                                                         </div>                                                      
                                                         </Card>
+                                                        </div>
+                                                        <div className="flex-row" style={{minWidth:"375px"}}>
+                                                        <Card titleProps={{ text:"Closed Pull Requests"}}>                                                                                                                    
+                                                            <Bar data={closedPRChartData} height={200}></Bar>                                                                
+                                                        </Card>
+                                                    </div>
                                                     </div>
                                                     <div className="flex-column">
+                                                    <div className="flex-row">
                                                     <Card titleProps={{ text: "Average Time Pull Requsts are Open" }}>
                                                         <div className="flex-cell" style={{ flexWrap: "wrap" }}>                                
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
@@ -612,10 +627,18 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                                 </div>                        
                                                         </div>
                                                     </Card>
+                                                    </div>
+                                                    <div className="flex-row" style={{minWidth:"375px"}}>
+                                                        <Card titleProps={{ text:"Duration Trends (2 week interval)"}}>                                                            
+                                                            <table>
+                                                                <tr><td>
+                                                            <Bar data={durationTrenChartData} height={200}></Bar>
+                                                                </td></tr>
+                                                                <tr><td><span className="body-xs">Trends for the last year (max last 500 PRs)</span></td></tr>
+                                                            </table>
+                                                        </Card>
+                                                    </div>
                                                 </div>
-
-                                            </div>      
-                                            <div className="flex-row">
                                                 <div className="flex-column" style={{minWidth:"350px"}}>
                                                     <Card className="flex-grow"  titleProps={{ text: "Target Branches" }}>
                                                     <div className="flex-row" style={{ flexWrap: "wrap" }}>                  
@@ -644,6 +667,10 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                         </div>
                                                     </Card>
                                                 </div>
+
+                                            </div>      
+                                            <div className="flex-row">
+      
                                             </div>
                                             <div className="flex-row">
                                                 <div className="flex-column" style={{minWidth:"350px"}}>
@@ -724,7 +751,9 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                 </Card>
                                                 
                                             </div>
+                                            
                                             </div>
+
                     {isToastVisible && (
                     <Toast
                         ref={this.toastRef}
