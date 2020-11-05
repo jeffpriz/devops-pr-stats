@@ -743,9 +743,9 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                     
                                                 </div>
                                                 <Card>
-                                                    <div className="flex-row" style={{minWidth:this.myBarChartDims.width, height:"350px"}}>
+                                                    <div className="flex-row" style={{minWidth:this.myBarChartDims.width, height:"250"}}>
                                                         <>
-                                                            <Bar data={groupBarChartData} options={stackedChartOptions} height={350}></Bar>
+                                                            <Bar data={groupBarChartData} options={stackedChartOptions} height={250}></Bar>
                                                         </>
                                                     </div>
                                                 </Card>

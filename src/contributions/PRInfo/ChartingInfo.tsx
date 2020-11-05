@@ -20,6 +20,16 @@ export interface IBarChartDataset
     fill:boolean
 }
 
+export interface ILineChartDataset
+{
+    type:string,
+    label:string,
+    data:number[],
+    backgroundColor:string,
+    borderColor:string,
+    fill:boolean
+}
+
 export interface IBarChartData
 {
     labels:string[],
@@ -52,6 +62,7 @@ export interface BarChartSize{
 export var NoVoteChartColor = "#990000";
 export var ApproveChartColor = "#b3d9ff";
 export var WaitVoteChartColor ="#661aff";
+export var RunningAverageChartColor = "#ff6600";
 export var RejectVoteChartColor = "#e67300";
 
 export var chartDataColors= [        
@@ -110,7 +121,7 @@ export function getDurationBarChartInfo(data:statKeepers.IDurationSlice[]):IBarC
 {
   var d:IBarChartData = {labels:[], datasets:[]};
   var durationSliceDataset:IBarChartDataset= {type:"bar", label:"Avg. Duration For Dates (hrs)", backgroundColor:ApproveChartColor, data:[], fill:true};
-  var runningAverageDataset:IBarChartDataset={type:"line", label:"Running Average Duration (hrs)", backgroundColor:WaitVoteChartColor, data:[], fill:false};
+  var runningAverageDataset:ILineChartDataset={type:"line", label:"Running Average Duration (hrs)", backgroundColor:RunningAverageChartColor, borderColor:RunningAverageChartColor, data:[], fill:false};
 
   if(data.length > 26)
   {
@@ -135,8 +146,9 @@ export function getDurationBarChartInfo(data:statKeepers.IDurationSlice[]):IBarC
       durationSliceDataset.data.push(thissliceAvgDuration);
       runningAverageDataset.data.push(thissliceRunningDuration);
   });
-  d.datasets.push(durationSliceDataset);
+  
   d.datasets.push(runningAverageDataset);
+  d.datasets.push(durationSliceDataset);
   return d;
 
 }
