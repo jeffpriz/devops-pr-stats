@@ -588,7 +588,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                         </div>
                                     </div>
                                             <div className="flex-row">
-                                                    <div className="flex-column" style={{minWidth:"225px"}}>
+                                                    <div className="flex-column" style={{minWidth:"350px"}}>
                                                         <div className="flex-row">
                                                         <Card titleProps={{text: this.displayText.value}}>          
                                                         <div className="flex-cell" style={{ flexWrap: "wrap" }}>                                
@@ -599,13 +599,13 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                         </div>                                                      
                                                         </Card>
                                                         </div>
-                                                        <div className="flex-row" style={{minWidth:"375px"}}>
+                                                        <div className="flex-row" style={{minWidth:"350px"}}>
                                                         <Card titleProps={{ text:"Closed Pull Requests"}}>                                                                                                                    
                                                             <Bar data={closedPRChartData} height={200}></Bar>                                                                
                                                         </Card>
                                                     </div>
                                                     </div>
-                                                    <div className="flex-column">
+                                                    <div className="flex-column" style={{minWidth:"350px"}}>
                                                     <div className="flex-row">
                                                     <Card titleProps={{ text: "Average Time Pull Requsts are Open" }}>
                                                         <div className="flex-cell" style={{ flexWrap: "wrap" }}>                                
@@ -628,7 +628,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                         </div>
                                                     </Card>
                                                     </div>
-                                                    <div className="flex-row" style={{minWidth:"375px"}}>
+                                                    <div className="flex-row" style={{minWidth:"350px"}}>
                                                         <Card titleProps={{ text:"Duration Trends (2 week interval)"}}>                                                            
                                                             <table>
                                                                 <tr><td>
