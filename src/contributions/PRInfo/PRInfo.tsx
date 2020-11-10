@@ -699,8 +699,8 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                         <table>                   
                                                             <thead>
                                                                 <td></td>
-                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
-                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"105px"}}>Percent of PRs</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"60px"}}>Count</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"100px"}}>Percent of PRs</td>
 
                                                             </thead>
                                                             <Observer selectedItem={this.approverList}>
@@ -710,8 +710,8 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                                             {props.selectedItem.map((items, index) => (
                                                                             <tr>
                                                                                 <td className="body-m secondary-text flex-center">{items.name}</td>
-                                                                                <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
-                                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"105px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+                                                                                <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"60px"}}>{items.value}</td>
+                                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"100px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
                                                                             </tr>
                                                                         ))}
                                                                         </>
@@ -745,15 +745,15 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                         <table>                   
                                                             <thead>
                                                                 <td></td>
-                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
-                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"105px"}}>Percent of PRs</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"60px"}}>Count</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"100px"}}>Percent of PRs</td>
 
                                                             </thead>
                                                         {this.approvalGroupList.map((items, index) => (
                                                             <tr>
                                                                 <td className="body-m secondary-text flex-center">{items.name}</td>
-                                                                <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
-                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"105px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+                                                                <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"60px"}}>{items.value}</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"100px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
 
                                                             </tr>                                    
                                                         ))}
