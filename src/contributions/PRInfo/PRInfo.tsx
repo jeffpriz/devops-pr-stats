@@ -573,7 +573,8 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                     <div className="flex-row">
                                         <div className="flex-column"> 
                                         <span className="flex-cell">
-                                           Show Pull Requests Completed within: <Dropdown
+                                           Show Pull Requests Completed within: <span style={{minWidth:"5px"}} />
+                                           <Dropdown
                                                     ariaLabel="Basic"                                                    
                                                     placeholder="Select an Option"
                                                     width={500}
@@ -587,88 +588,107 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                             </span>
                                         </div>
                                     </div>
+                                    <div className="flex-row">
+                                        <br></br>
+                                    </div>
                                             <div className="flex-row">
                                                     <div className="flex-column" style={{minWidth:"350px"}}>
                                                         <div className="flex-row">
-                                                        <Card titleProps={{text: this.displayText.value}}>          
-                                                        <div className="flex-cell" style={{ flexWrap: "wrap" }}>                                
-                                                                <div className="flex-column" style={{ minWidth: "200px" }} key={1}>                                              
-                                                                    <div className="body-m secondary-text" style={{minWidth:"120px"}}>Count</div>
-                                                                    <div className="title-m flex-center">{this.PRCount}</div>  
+                                                        <Card titleProps={{text: this.displayText.value}} >          
+                                                        <div className="flex-cell" style={{ flexWrap: "wrap", minWidth:"350px"}}>                                
+                                                                <div className="flex-column" style={{ minWidth: "310px" }} key={1}>                                              
+                                                                    <div className="body-m secondary-text flex-center" style={{ minWidth: "350px", textAlign:"center" }}>Count</div>
+                                                                    <div className="title-m flex-center" style={{ minWidth: "350px", textAlign:"center" }}>{this.PRCount}</div>  
                                                                 </div>
                                                         </div>                                                      
                                                         </Card>
                                                         </div>
-                                                        <div className="flex-row" style={{minWidth:"350px"}}>
-                                                        <Card titleProps={{ text:"Closed Pull Requests"}}>                                                                                                                    
-                                                            <Bar data={closedPRChartData} height={200}></Bar>                                                                
+                                                        <div className="flex-row"> 
+                                                        <div className="flex-cell flex-grow" style={{minWidth:"350px"}}>
+                                                        <Card titleProps={{ text:"Closed Pull Requests"}}>
+                                                            <div className="flex-cell" style={{minWidth:"315px"}}>
+                                                                <table>
+                                                                    <tr><td>
+                                                                    <div style={{minWidth:"315px"}}><Bar data={closedPRChartData} height={200}></Bar></div>    
+                                                                    </td></tr>
+                                                                    <tr><td>
+                                                                    <div className="body-xs" style={{minWidth:"315px"}}>Trends for the last year (max last 500 PRs)</div>                                                                
+                                                                    </td></tr>
+                                                                </table>
+                                                            </div>
                                                         </Card>
+                                                        </div>
                                                     </div>
                                                     </div>
                                                     <div className="flex-column" style={{minWidth:"350px"}}>
                                                     <div className="flex-row">
-                                                    <Card titleProps={{ text: "Average Time Pull Requsts are Open" }}>
-                                                        <div className="flex-cell" style={{ flexWrap: "wrap" }}>                                
+                                                    <Card titleProps={{text: "Average Time Pull Requsts are Open"}}>
+                                                        <div className="flex-cell" style={{ flexWrap: "wrap", textAlign:"center", minWidth:"350px"}}>
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
                                                                     <div className="body-m secondary-text">Days</div>
                                                                     <div className="title-m primary-text flex-center">{this.durationDisplayObject.days.toString()}</div>
-                                                                </div>                        
+                                                                </div>
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={2}>
                                                                     <div className="body-m secondary-text">Hours</div>
                                                                     <div className="title-m primary-text flex-center">{this.durationDisplayObject.hours.toString()}</div>
-                                                                </div>                        
+                                                                </div>
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={3}>
                                                                     <div className="body-m secondary-text">Minutes</div>
                                                                     <div className="title-m primary-text flex-center">{this.durationDisplayObject.minutes.toString()}</div>
-                                                                </div>                        
+                                                                </div>
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={4}>
                                                                     <div className="body-m secondary-text">Seconds</div>
                                                                     <div className="title-m primary-text flex-center">{this.durationDisplayObject.seconds.toString()}</div>
-                                                                </div>                        
+                                                                </div>
                                                         </div>
                                                     </Card>
                                                     </div>
-                                                    <div className="flex-row" style={{minWidth:"350px"}}>
-                                                        <Card titleProps={{ text:"Duration Trends (2 week interval)"}}>                                                            
+                                                    <div className="flex-row">
+                                                        <div className="flex-cell" style={{minWidth:"350px"}}>
+                                                        <Card titleProps={{ text:"Open Time Trends (2 week interval)"}}>
+                                                            <div className="flex-cell" style={{minWidth:"315px"}}>   
                                                             <table>
-                                                                <tr><td>
-                                                            <Bar data={durationTrenChartData} height={200}></Bar>
-                                                                </td></tr>
-                                                                <tr><td><span className="body-xs">Trends for the last year (max last 500 PRs)</span></td></tr>
+                                                                    <tr><td>
+                                                                    <div className="flex-cell" style={{minWidth:"315px"}}><Bar data={durationTrenChartData} height={200}></Bar></div>   
+                                                                    </td></tr>                                                                                                                       
+                                                                    <tr><td>
+                                                                    <div className="flex-cell body-xs" style={{minWidth:"315px"}}>Trends for the last year (max last 500 PRs)</div>
+                                                                    </td></tr>                                                                
                                                             </table>
+                                                            </div>
                                                         </Card>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="flex-column" style={{minWidth:"350px"}}>
                                                     <Card className="flex-grow"  titleProps={{ text: "Target Branches" }}>
-                                                    <div className="flex-row" style={{ flexWrap: "wrap" }}>                  
-                                                        <table> 
+                                                    <div className="flex-row" style={{ flexWrap: "wrap" }}>
+                                                        <table>
                                                             <thead>
                                                                 <td></td>
                                                                 <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
                                                                 <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent</td>
-                                                            </thead>             
+                                                            </thead>
                                                         {this.targetBranches.map((items, index) => (
                                                             <tr>
-                                                                <td className="body-m secondary-text">{items.name}</td>                                    
+                                                                <td className="body-m secondary-text">{items.name}</td>
                                                                 <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
                                                                 <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
                                                             </tr>
                                                         ))}
                                                         </table>
-                                                        </div>                                
+                                                        </div>
                                                     </Card>
                                                 </div>
-                                                <div className="flex-column" style={{minWidth:"400"}}>
+                                                <div className="flex-column" style={{minWidth:"450"}}>
                                                     <Card className="flex-grow">
-                                                    <div className="flex-row" style={{minWidth:"500px"}}>
-                                                            <Doughnut data={targetBranchChartData} height={200}>                        
+                                                    <div className="flex-row" style={{minWidth:"450px"}}>
+                                                            <Doughnut data={targetBranchChartData} height={200}>
                                                             </Doughnut>
                                                         </div>
                                                     </Card>
                                                 </div>
-
-                                            </div>      
+                                            </div>
                                             <div className="flex-row">
       
                                             </div>
@@ -702,17 +722,17 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                         </div>                                
                                                     </Card>
                                                 </div>
-                                                <div className="flex-column" style={{minWidth:"500"}}>
+                                                <div className="flex-column" style={{minWidth:"500px"}}>
                                                     <Card className="flex-grow">
-                                                    <div className="flex-row flex-grow flex-cell" style={{minWidth:"500px"}}>
-                                                        <Doughnut  data={reviewerPieChartData} height={250}></Doughnut>
+                                                    <div className="flex-row flex-grow flex-cell" style={{minWidth:"500px",height:"220"}}>
+                                                        <Doughnut  data={reviewerPieChartData} height={220}></Doughnut>
                                                     </div>
                                                     </Card>
                                                 </div>
                                                 <div className="flex-column">
                                                     <Card>
-                                                        <div className="flex-row" style={{minWidth:500}}>                                    
-                                                            <Bar data={reviewerBarChartData} options={stackedChartOptions} height={250}></Bar>                                    
+                                                        <div className="flex-row" style={{minWidth:400, height:"300"}}>                                    
+                                                            <Bar data={reviewerBarChartData} options={stackedChartOptions} height={300}></Bar>                                    
                                                         </div>
                                                     </Card>
                                                 </div>
@@ -743,9 +763,9 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                     
                                                 </div>
                                                 <Card>
-                                                    <div className="flex-row" style={{minWidth:this.myBarChartDims.width, height:"250"}}>
+                                                    <div className="flex-row" style={{minWidth:this.myBarChartDims.width, height:"200"}}>
                                                         <>
-                                                            <Bar data={groupBarChartData} options={stackedChartOptions} height={250}></Bar>
+                                                            <Bar data={groupBarChartData} options={stackedChartOptions} height={200}></Bar>
                                                         </>
                                                     </div>
                                                 </Card>
