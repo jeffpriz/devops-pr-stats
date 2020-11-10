@@ -700,7 +700,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                             <thead>
                                                                 <td></td>
                                                                 <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
-                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent of PRs</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"105px"}}>Percent of PRs</td>
 
                                                             </thead>
                                                             <Observer selectedItem={this.approverList}>
@@ -711,7 +711,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                                             <tr>
                                                                                 <td className="body-m secondary-text flex-center">{items.name}</td>
                                                                                 <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
-                                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+                                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"105px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
                                                                             </tr>
                                                                         ))}
                                                                         </>
@@ -746,14 +746,14 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                             <thead>
                                                                 <td></td>
                                                                 <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Count</td>
-                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>Percent of PRs</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"105px"}}>Percent of PRs</td>
 
                                                             </thead>
                                                         {this.approvalGroupList.map((items, index) => (
                                                             <tr>
                                                                 <td className="body-m secondary-text flex-center">{items.name}</td>
                                                                 <td className="body-m primary-text flex-center" style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{items.value}</td>
-                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"85px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
+                                                                <td style={{alignContent:"center", textAlign:"center", minWidth:"105px"}}>{(items.value / this.PRCount * 100).toFixed(2)}%</td>
 
                                                             </tr>                                    
                                                         ))}
