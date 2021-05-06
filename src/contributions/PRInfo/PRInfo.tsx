@@ -622,7 +622,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                     </div>
                                                     <div className="flex-column" style={{minWidth:"350px"}}>
                                                     <div className="flex-row">
-                                                    <Card titleProps={{text: "Average Time Pull Requsts are Open"}}>
+                                                    <Card titleProps={{text: "Average Time Pull Requests are Open"}}>
                                                         <div className="flex-cell" style={{ flexWrap: "wrap", textAlign:"center", minWidth:"350px"}}>
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
                                                                     <div className="body-m secondary-text">Days</div>
