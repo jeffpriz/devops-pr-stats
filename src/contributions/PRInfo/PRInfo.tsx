@@ -347,12 +347,12 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                         this.AddRowItem(thisPR);
 
                         //this.AddRowItem(thisPR);
-                        if(this.state.foundCompletedPRs == false)
+                        if(!this.state.foundCompletedPRs)
                         {
                             this.setState({foundCompletedPRs:true, repository:this.state.repository, isToastFadingOut:false, isToastVisible:false, exception:"", doneLoading:true});
                             
                         }
-                        if(this.state.doneLoading == false){
+                        if(!this.state.doneLoading){
                             this.setState({doneLoading:true});
                         }
                         this.PRCount +=1;
@@ -459,7 +459,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         let thisID = thisValue.displayName;
         let thisName = thisValue.displayName;
         let nameParts = thisName.split("\\")
-        if(nameParts.length = 2)
+        if(nameParts.length == 2)
         {
             thisName = nameParts[1];
         }
