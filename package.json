@@ -24,6 +24,7 @@
     "publish-extension": "tfx extension publish --manifest-globs azure-devops-extension.json src/contributions/PRInfo/PRInfo.json"
   },
   "dependencies": {
+    "-": "0.0.1",
     "azure-devops-extension-api": "~1.157.0",
     "azure-devops-extension-sdk": "~2.0.11",
     "azure-devops-ui": "2.166.98",
@@ -38,7 +39,7 @@
     "@types/react-dom": "~16.8.0",
     "@types/recharts": "^1.8.16",
     "base64-inline-loader": "^1.1.1",
-    "copy-webpack-plugin": "^4.5.4",
+    "copy-webpack-plugin": "^4.6.0",
     "css-loader": "~1.0.0",
     "file-loader": "~2.0.0",
     "node-sass": "~4.12.0",
@@ -49,6 +50,6 @@
     "ts-loader": "~5.2.2",
     "typescript": "^2.9.2",
     "webpack": "^4.22.0",
-    "webpack-cli": "^3.1.2"
+    "webpack-cli": "^3.3.12"
   }
 }

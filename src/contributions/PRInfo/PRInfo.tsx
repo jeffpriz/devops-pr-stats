@@ -347,12 +347,12 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                         this.AddRowItem(thisPR);
 
                         //this.AddRowItem(thisPR);
-                        if(this.state.foundCompletedPRs == false)
+                        if(!this.state.foundCompletedPRs)
                         {
                             this.setState({foundCompletedPRs:true, repository:this.state.repository, isToastFadingOut:false, isToastVisible:false, exception:"", doneLoading:true});
                             
                         }
-                        if(this.state.doneLoading == false){
+                        if(!this.state.doneLoading){
                             this.setState({doneLoading:true});
                         }
                         this.PRCount +=1;
@@ -459,7 +459,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         let thisID = thisValue.displayName;
         let thisName = thisValue.displayName;
         let nameParts = thisName.split("\\")
-        if(nameParts.length = 2)
+        if(nameParts.length == 2)
         {
             thisName = nameParts[1];
         }
@@ -622,7 +622,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                     </div>
                                                     <div className="flex-column" style={{minWidth:"350px"}}>
                                                     <div className="flex-row">
-                                                    <Card titleProps={{text: "Average Time Pull Requsts are Open"}}>
+                                                    <Card titleProps={{text: "Average Time Pull Requests are Open"}}>
                                                         <div className="flex-cell" style={{ flexWrap: "wrap", textAlign:"center", minWidth:"350px"}}>
                                                                 <div className="flex-column" style={{ minWidth: "70px" }} key={1}>
                                                                     <div className="body-m secondary-text">Days</div>
