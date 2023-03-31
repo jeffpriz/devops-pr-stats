@@ -535,6 +535,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
         let reviewerPieChartData = getPieChartInfo(this.approverList.value);
         let groupBarChartData = getStackedBarChartInfo(this.approvalGroupList,"");
         let reviewerBarChartData = getStackedBarChartInfo(this.approverList.value, this.noReviewerText);
+        let smallNumberOfReviewers = reviewerPieChartData.labels.length < 7
         let durationTrenChartData = getDurationBarChartInfo(this.durationSlices);
         let closedPRChartData = getPullRequestsCompletedChartInfo(this.durationSlices);
         if(doneLoading)
@@ -722,16 +723,19 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                                                         </div>                                
                                                     </Card>
                                                 </div>
-                                                <div className="flex-column" style={{minWidth:"500px"}}>
-                                                    <Card className="flex-grow">
-                                                    <div className="flex-row flex-grow flex-cell" style={{minWidth:"500px",height:"220"}}>
-                                                        <Doughnut  data={reviewerPieChartData} height={220}></Doughnut>
+                                                {/* Removing the Doughnut when there are too many reviewers */}
+                                                {smallNumberOfReviewers && 
+                                                    <div className="flex-column" style={{minWidth:"500px"}}>
+                                                        <Card className="flex-grow">
+                                                            <div className="flex-row flex-grow flex-cell" style={{minWidth:"500px",height:"220"}}>
+                                                                <Doughnut  data={reviewerPieChartData} height={220}></Doughnut>
+                                                            </div>
+                                                        </Card>
                                                     </div>
-                                                    </Card>
-                                                </div>
+                                                }
                                                 <div className="flex-column">
                                                     <Card>
-                                                        <div className="flex-row" style={{minWidth:400, height:"300"}}>                                    
+                                                        <div className="flex-row" style={{minWidth:smallNumberOfReviewers ? 400 : 800, height:smallNumberOfReviewers ? 400 : 800}}>
                                                             <Bar data={reviewerBarChartData} options={stackedChartOptions} height={300}></Bar>                                    
                                                         </div>
                                                     </Card>
